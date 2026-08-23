@@ -28,6 +28,12 @@ export default function HomePage() {
         <nav className="flex gap-6 font-mono text-xs tracking-wider text-ceniza">
           <a
             className="transition-colors hover:text-brasa focus-visible:text-brasa focus-visible:outline-none"
+            href="/login"
+          >
+            ENTRAR
+          </a>
+          <a
+            className="transition-colors hover:text-brasa focus-visible:text-brasa focus-visible:outline-none"
             href="https://github.com/Esteban0921/mailforge-starter"
             target="_blank"
             rel="noreferrer"
