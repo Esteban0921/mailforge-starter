@@ -45,6 +45,7 @@ Usamos **Shared Database + tenant_id** (la más simple y escalable para empezar)
 - En NestJS usamos un `OrganizationGuard` + decorador `@CurrentOrganization()`
 
 Ventajas:
+
 - Fácil de implementar
 - Buen rendimiento
 - Fácil de hacer backups
@@ -87,34 +88,38 @@ apps/api/src/
 
 ## Packages compartidos
 
-| Package              | Responsabilidad                              |
-|----------------------|----------------------------------------------|
-| `packages/database`  | Schema de Prisma + cliente generado          |
-| `packages/shared`    | Tipos TypeScript, constantes, utils          |
-| `packages/email`     | Renderizado de plantillas + cliente de envío |
-| `packages/ui`        | Componentes React compartidos (opcional)     |
+| Package             | Responsabilidad                              |
+| ------------------- | -------------------------------------------- |
+| `packages/database` | Schema de Prisma + cliente generado          |
+| `packages/shared`   | Tipos TypeScript, constantes, utils          |
+| `packages/email`    | Renderizado de plantillas + cliente de envío |
+| `packages/ui`       | Componentes React compartidos (opcional)     |
 
 ---
 
 ## Decisiones importantes de diseño
 
 ### 1. ¿Por qué NestJS?
+
 - Estructura modular muy clara
 - Excelente para aplicaciones multi-tenant
 - Decoradores y guards muy potentes
 - Buena integración con Prisma y BullMQ
 
 ### 2. ¿Por qué BullMQ y no solo enviar en el request?
+
 - Los envíos masivos no pueden hacerse de forma síncrona
 - Permite reintentos, rate limiting y control de concurrencia
 - Escala mucho mejor
 
 ### 3. ¿Por qué Mailpit en desarrollo?
+
 - Cero configuración
 - Interfaz web para ver todos los emails enviados
 - No contamina la reputación de ningún dominio real
 
 ### 4. Autenticación
+
 Empezamos con un sistema propio simple (JWT + refresh tokens) o Better Auth.  
 Más adelante se puede añadir login social si se quiere.
 

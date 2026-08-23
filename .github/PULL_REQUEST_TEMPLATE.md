@@ -14,9 +14,9 @@
 
 <!-- Pasos claros para que el otro pueda probar tu cambio -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Checklist
 

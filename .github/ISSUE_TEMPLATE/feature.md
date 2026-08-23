@@ -1,7 +1,7 @@
 ---
 name: Feature
 about: Nueva funcionalidad o mejora
-title: "[Feature] "
+title: '[Feature] '
 labels: enhancement
 assignees: ''
 ---
@@ -16,9 +16,9 @@ assignees: ''
 
 ## Criterios de aceptación
 
-- [ ] 
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
+- [ ]
 
 ## Notas técnicas (opcional)
 

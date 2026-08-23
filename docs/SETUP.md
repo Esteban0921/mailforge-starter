@@ -6,7 +6,7 @@ Este documento explica cómo levantar el proyecto completo en tu máquina.
 
 ## Requisitos previos
 
-- Node.js 20+ 
+- Node.js 20+
 - pnpm 9+ (`npm install -g pnpm`)
 - Docker + Docker Compose
 - Git
@@ -47,11 +47,13 @@ docker compose up -d
 ```
 
 Esto levanta:
+
 - **PostgreSQL** → puerto 5432
 - **Redis** → puerto 6379
 - **Mailpit** → interfaz web en http://localhost:8025
 
 Para ver los logs:
+
 ```bash
 docker compose logs -f
 ```
@@ -79,6 +81,7 @@ pnpm dev
 ```
 
 Esto debería arrancar:
+
 - API (NestJS) → http://localhost:3001
 - Frontend (Next.js) → http://localhost:3000
 - Mailpit → http://localhost:8025
@@ -87,16 +90,16 @@ Esto debería arrancar:
 
 ## Comandos útiles
 
-| Comando | Descripción |
-|---------|-------------|
-| `pnpm dev` | Arranca API + Frontend |
-| `pnpm --filter api start:dev` | Solo la API |
-| `pnpm --filter web dev` | Solo el Frontend |
-| `pnpm --filter database migrate:dev` | Crear/ejecutar migraciones |
-| `pnpm --filter database studio` | Abrir Prisma Studio |
-| `docker compose up -d` | Levantar infra |
-| `docker compose down` | Parar infra |
-| `docker compose down -v` | Parar y borrar volúmenes (¡cuidado!) |
+| Comando                              | Descripción                          |
+| ------------------------------------ | ------------------------------------ |
+| `pnpm dev`                           | Arranca API + Frontend               |
+| `pnpm --filter api start:dev`        | Solo la API                          |
+| `pnpm --filter web dev`              | Solo el Frontend                     |
+| `pnpm --filter database migrate:dev` | Crear/ejecutar migraciones           |
+| `pnpm --filter database studio`      | Abrir Prisma Studio                  |
+| `docker compose up -d`               | Levantar infra                       |
+| `docker compose down`                | Parar infra                          |
+| `docker compose down -v`             | Parar y borrar volúmenes (¡cuidado!) |
 
 ---
 
@@ -111,16 +114,21 @@ Esto debería arrancar:
 ## Problemas comunes
 
 ### Puerto ya en uso
+
 Cambiad los puertos en `docker-compose.yml` o parad el proceso que los esté usando.
 
 ### Error de conexión a PostgreSQL
+
 Aseguraos de que el contenedor de Postgres está healthy:
+
 ```bash
 docker compose ps
 ```
 
 ### Prisma no encuentra el schema
+
 Ejecutad siempre los comandos de Prisma desde la raíz con el filtro:
+
 ```bash
 pnpm --filter database <comando>
 ```

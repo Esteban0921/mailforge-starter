@@ -22,29 +22,29 @@ En producción podéis usar vuestro propio servidor de correo o conectar un ESP 
 
 ## Stack tecnológico
 
-| Capa              | Tecnología                      |
-|-------------------|---------------------------------|
-| Monorepo          | pnpm + Turborepo                |
-| Backend           | NestJS + Prisma                 |
-| Frontend          | Next.js 15 (App Router)         |
-| Base de datos     | PostgreSQL                      |
-| Cola de trabajos  | Redis + BullMQ                  |
-| Email (desarrollo)| Mailpit                         |
-| Auth              | Better Auth / JWT propio        |
-| UI                | Tailwind CSS + shadcn/ui        |
-| Infra local       | Docker Compose                  |
+| Capa               | Tecnología               |
+| ------------------ | ------------------------ |
+| Monorepo           | pnpm + Turborepo         |
+| Backend            | NestJS + Prisma          |
+| Frontend           | Next.js 15 (App Router)  |
+| Base de datos      | PostgreSQL               |
+| Cola de trabajos   | Redis + BullMQ           |
+| Email (desarrollo) | Mailpit                  |
+| Auth               | Better Auth / JWT propio |
+| UI                 | Tailwind CSS + shadcn/ui |
+| Infra local        | Docker Compose           |
 
 ---
 
 ## Documentación
 
-| Documento | Descripción |
-|---------|-------------|
-| [SETUP.md](docs/SETUP.md) | Cómo levantar el proyecto en local |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitectura del sistema |
-| [ROADMAP.md](docs/ROADMAP.md) | Plan de trabajo por fases + distribución de tareas |
-| [DATA_MODEL.md](docs/DATA_MODEL.md) | Modelo de datos |
-| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Cómo trabajamos juntos (ramas, PRs, convenciones) |
+| Documento                               | Descripción                                        |
+| --------------------------------------- | -------------------------------------------------- |
+| [SETUP.md](docs/SETUP.md)               | Cómo levantar el proyecto en local                 |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitectura del sistema                           |
+| [ROADMAP.md](docs/ROADMAP.md)           | Plan de trabajo por fases + distribución de tareas |
+| [DATA_MODEL.md](docs/DATA_MODEL.md)     | Modelo de datos                                    |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Cómo trabajamos juntos (ramas, PRs, convenciones)  |
 
 ---
 

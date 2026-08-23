@@ -1,0 +1,13 @@
+# Normalize line endings across platforms: LF for all text sources.
+* text=auto eol=lf
+
+# Windows scripts keep CRLF where required.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets.
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

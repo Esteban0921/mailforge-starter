@@ -8,11 +8,11 @@ services:
       POSTGRES_PASSWORD: mailforge
       POSTGRES_DB: mailforge
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mailforge -d mailforge"]
+      test: ['CMD-SHELL', 'pg_isready -U mailforge -d mailforge']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -22,11 +22,11 @@ services:
     container_name: mailforge-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -36,8 +36,8 @@ services:
     container_name: mailforge-mailpit
     restart: unless-stopped
     ports:
-      - "8025:8025"   # Interfaz web
-      - "1025:1025"   # SMTP
+      - '8025:8025' # Interfaz web
+      - '1025:1025' # SMTP
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
