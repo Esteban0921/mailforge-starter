@@ -17,6 +17,7 @@ Este repositorio contiene la **base documental y estructural** del proyecto.
 ### Día 1-2 (en paralelo)
 
 **Esteban:**
+
 1. Crear el repositorio en GitHub (privado)
 2. Subir todo este contenido
 3. Inicializar el monorepo real con Turborepo + NestJS
@@ -24,6 +25,7 @@ Este repositorio contiene la **base documental y estructural** del proyecto.
 5. Conectar Prisma a Postgres
 
 **Joseph:**
+
 1. Configurar ESLint + Prettier + Husky
 2. Crear el proyecto Next.js dentro de `apps/web`
 3. Configurar Tailwind + shadcn/ui
@@ -31,6 +33,7 @@ Este repositorio contiene la **base documental y estructural** del proyecto.
 5. Revisar y mejorar la documentación si hace falta
 
 ### Cuando terminéis la Fase 0
+
 - Los dos debéis poder hacer `pnpm install && pnpm dev` y ver API + Frontend + Mailpit funcionando.
 - Entonces pasáis a la **Fase 1** (Auth + Organizations) siguiendo el ROADMAP.md
 

@@ -1,7 +1,7 @@
 ---
 name: Bug
 about: Reportar un error
-title: "[Bug] "
+title: '[Bug] '
 labels: bug
 assignees: ''
 ---
@@ -12,9 +12,9 @@ assignees: ''
 
 ## Pasos para reproducirlo
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Comportamiento esperado
 

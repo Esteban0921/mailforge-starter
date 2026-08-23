@@ -35,6 +35,11 @@ packages/database/prisma/*.db-journal
 
 # Testing
 coverage
+playwright-report
+test-results
+
+# Husky (generated helpers)
+.husky/_
 
 # Misc
 *.tsbuildinfo

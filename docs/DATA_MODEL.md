@@ -8,6 +8,7 @@ Se irá ampliando conforme avancemos en las fases.
 ## Entidades base (Fase 1)
 
 ### User
+
 - id
 - email (único)
 - passwordHash
@@ -16,6 +17,7 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### Organization
+
 - id
 - name
 - slug (único)
@@ -23,6 +25,7 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### OrganizationMember
+
 - id
 - organizationId
 - userId
@@ -36,6 +39,7 @@ Se irá ampliando conforme avancemos en las fases.
 ## Audiencias y Suscriptores (Fase 2)
 
 ### Audience
+
 - id
 - organizationId
 - name
@@ -44,6 +48,7 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### Subscriber
+
 - id
 - organizationId
 - email
@@ -57,11 +62,13 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### AudienceSubscriber (tabla de unión)
+
 - audienceId
 - subscriberId
 - subscribedAt
 
 ### Tag / SubscriberTag (opcional en primera versión)
+
 - Permite etiquetar suscriptores para segmentación.
 
 ---
@@ -69,6 +76,7 @@ Se irá ampliando conforme avancemos en las fases.
 ## Campañas y Plantillas (Fase 3)
 
 ### Template
+
 - id
 - organizationId
 - name
@@ -79,6 +87,7 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### Campaign
+
 - id
 - organizationId
 - name
@@ -92,6 +101,7 @@ Se irá ampliando conforme avancemos en las fases.
 - updatedAt
 
 ### EmailLog
+
 - id
 - organizationId
 - campaignId (opcional, null si es de automatización)
@@ -114,6 +124,7 @@ Los eventos de tracking se registran principalmente actualizando `EmailLog` y el
 También se puede tener una tabla `TrackingEvent` si se quiere un historial más detallado:
 
 ### TrackingEvent
+
 - id
 - organizationId
 - emailLogId
@@ -126,6 +137,7 @@ También se puede tener una tabla `TrackingEvent` si se quiere un historial más
 ## Automatizaciones (Fase 5)
 
 ### Automation
+
 - id
 - organizationId
 - name
@@ -135,6 +147,7 @@ También se puede tener una tabla `TrackingEvent` si se quiere un historial más
 - updatedAt
 
 ### AutomationStep
+
 - id
 - automationId
 - order
@@ -143,6 +156,7 @@ También se puede tener una tabla `TrackingEvent` si se quiere un historial más
 - createdAt
 
 ### AutomationEnrollment
+
 - id
 - automationId
 - subscriberId

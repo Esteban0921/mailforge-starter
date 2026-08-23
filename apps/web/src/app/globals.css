@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Iron / paper / heat — the forge palette. */
+  --color-hierro: #14161b;
+  --color-hierro-2: #232732;
+  --color-papel: #ece7db;
+  --color-ceniza: #9296a6;
+  --color-brasa: #ff6a3c;
+  --color-calor: #ffc46b;
+
+  /* Cast-plate sans for the hero, machine mono for everything operational. */
+  --font-display:
+    ui-sans-serif, 'Segoe UI Variable Display', 'Segoe UI', -apple-system,
+    system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, 'SF Mono', monospace;
+}
+
+/*
+ * The molten rule under the wordmark: heats up on page load, then keeps a
+ * slow ambient shimmer. The single orchestrated moment on the page.
+ */
+.heat-bar {
+  background: linear-gradient(90deg, var(--color-brasa), var(--color-calor));
+  background-size: 200% 100%;
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .heat-bar {
+    animation:
+      heat-up 900ms ease-out both,
+      heat-shimmer 5s linear 900ms infinite alternate;
+  }
+
+  @keyframes heat-up {
+    from {
+      transform: scaleX(0);
+      filter: brightness(0.4);
+    }
+    to {
+      transform: scaleX(1);
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes heat-shimmer {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 100% 50%;
+    }
+  }
+}

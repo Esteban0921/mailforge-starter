@@ -6,10 +6,10 @@ Este documento define las reglas para que Esteban y Joseph puedan colaborar de f
 
 ## Roles orientativos
 
-| Persona   | Enfoque principal                          | Puede tocar también |
-|-----------|--------------------------------------------|---------------------|
-| **Esteban** | Backend (NestJS), Prisma, colas, Docker, infraestructura | Frontend cuando haga falta |
-| **Joseph**  | Frontend (Next.js), UI, experiencia de usuario, componentes | Backend cuando haga falta |
+| Persona     | Enfoque principal                                           | Puede tocar también        |
+| ----------- | ----------------------------------------------------------- | -------------------------- |
+| **Esteban** | Backend (NestJS), Prisma, colas, Docker, infraestructura    | Frontend cuando haga falta |
+| **Joseph**  | Frontend (Next.js), UI, experiencia de usuario, componentes | Backend cuando haga falta  |
 
 La idea es **minimizar los bloqueos**. Si alguien necesita algo del otro, se crea un contrato (tipos + endpoints) y se sigue adelante con mocks.
 
@@ -26,6 +26,7 @@ git checkout -b feature/nombre-de-la-feature
 ```
 
 Ejemplos de nombres de rama:
+
 - `feature/auth-login`
 - `feature/audiences-crud`
 - `feature/campaign-sender`
@@ -65,6 +66,7 @@ Usamos **Conventional Commits**:
 ## Cómo evitar bloqueos entre los dos
 
 ### Técnica 1: Contratos primero
+
 Antes de implementar una feature que necesita backend + frontend:
 
 1. Se define en un Issue o en `packages/shared` los tipos y los endpoints.
@@ -73,13 +75,17 @@ Antes de implementar una feature que necesita backend + frontend:
 4. Se conectan.
 
 ### Técnica 2: Mocks
+
 Joseph puede usar:
+
 - MSW (Mock Service Worker)
 - Datos hardcodeados temporales
 - Una rama de “mock” que luego se elimina
 
 ### Técnica 3: Trabajo en vertical slices pequeños
+
 En lugar de “terminar todo el backend de campañas”, mejor:
+
 - “Crear campaña (solo guardar en DB)” → PR
 - “Listar campañas” → PR
 - “Enviar campaña a Mailpit” → PR

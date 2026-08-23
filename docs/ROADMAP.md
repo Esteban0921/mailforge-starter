@@ -19,6 +19,7 @@ Plan de trabajo dividido para que **Esteban** y **Joseph** puedan avanzar en par
 **Objetivo:** Que los dos podáis clonar el repo, levantar todo con Docker y empezar a codear sin fricción.
 
 ### Tareas de Esteban (Backend / Infra)
+
 - [ ] Inicializar monorepo con `pnpm` + Turborepo
 - [ ] Crear `docker-compose.yml` con:
   - PostgreSQL
@@ -30,6 +31,7 @@ Plan de trabajo dividido para que **Esteban** y **Joseph** puedan avanzar en par
 - [ ] Crear archivo `.env.example`
 
 ### Tareas de Joseph (Frontend / Tooling)
+
 - [ ] Configurar ESLint + Prettier + Husky + lint-staged
 - [ ] Crear el proyecto Next.js 15 en `apps/web`
 - [ ] Configurar Tailwind CSS + shadcn/ui (estructura base)
@@ -47,6 +49,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 **Objetivo:** Poder registrarse, crear organizaciones (clientes) y cambiar de organización.
 
 ### Tareas de Esteban (Backend)
+
 - [ ] Modelo de datos: `User`, `Organization`, `OrganizationMember`
 - [ ] Módulo de autenticación (registro + login + JWT o Better Auth)
 - [ ] CRUD de Organizations
@@ -55,6 +58,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 - [ ] Endpoints protegidos de prueba
 
 ### Tareas de Joseph (Frontend)
+
 - [ ] Páginas de Login y Registro
 - [ ] Página de “Crear organización”
 - [ ] Selector de organización (organization switcher)
@@ -71,6 +75,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 **Objetivo:** Cada organización puede tener listas y suscriptores.
 
 ### Tareas de Esteban
+
 - [ ] Modelos: `Audience`, `Subscriber`, `SubscriberTag`
 - [ ] Endpoints CRUD de Audiences
 - [ ] Endpoints de Suscriptores (crear, listar, buscar, cambiar estado)
@@ -78,6 +83,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 - [ ] Validación de emails y control de estado (`subscribed`, `unsubscribed`, `bounced`)
 
 ### Tareas de Joseph
+
 - [ ] Página de listado de Audiencias
 - [ ] Página de detalle de una Audiencia (tabla de suscriptores)
 - [ ] Modal/formulario de creación de suscriptor
@@ -92,6 +98,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 **Objetivo:** Crear una campaña, elegir audiencia y enviarla (aunque sea a Mailpit).
 
 ### Tareas de Esteban
+
 - [ ] Modelos: `Template`, `Campaign`, `EmailLog`
 - [ ] Sistema de plantillas simples (HTML + variables `{{nombre}}`)
 - [ ] Creación y programación de campañas
@@ -101,6 +108,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 - [ ] Integración con Mailpit (Nodemailer)
 
 ### Tareas de Joseph
+
 - [ ] Editor de plantillas simple (textarea + preview)
 - [ ] Wizard de creación de campaña
 - [ ] Selector de audiencia
@@ -113,6 +121,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 ## Fase 4 – Tracking y Unsubscribe (1 semana)
 
 ### Tareas de Esteban
+
 - [ ] Pixel de apertura
 - [ ] Tracking de clics (redirección con registro)
 - [ ] Endpoint y lógica de unsubscribe
@@ -120,6 +129,7 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 - [ ] Webhooks internos de eventos
 
 ### Tareas de Joseph
+
 - [ ] Página pública de unsubscribe (bonita y clara)
 - [ ] Dashboard básico de métricas de una campaña (abiertos, clics, bajas)
 - [ ] Mostrar estadísticas en el detalle de campaña
@@ -131,17 +141,20 @@ Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el f
 **Objetivo:** Tener al menos 2-3 flujos automáticos.
 
 ### Flujos prioritarios
+
 1. Email de bienvenida (al suscribirse)
 2. Re-engagement (inactividad)
 3. Carrito abandonado (simulado con eventos)
 
 ### Tareas de Esteban
+
 - [ ] Modelo de `Automation` / `Journey`
 - [ ] Motor simple de journeys (estados + delays)
 - [ ] Triggers (evento de suscripción, evento personalizado…)
 - [ ] Ejecución de pasos de la automatización
 
 ### Tareas de Joseph
+
 - [ ] Interfaz para crear/editar automatizaciones
 - [ ] Visualización del flujo (aunque sea lista de pasos al principio)
 - [ ] Página de métricas de automatizaciones
