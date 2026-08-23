@@ -1,38 +1,53 @@
 # Arquitectura de MailForge
 
-## Visión general
+MailForge es una plataforma **multi-tenant** de email marketing B2C, self-hosted y
+open-source. Cada Organization (cliente) gestiona sus datos de forma aislada.
 
-MailForge es una aplicación **multi-tenant** donde cada **Organization** (cliente) tiene sus datos completamente aislados.
+Este documento describe la arquitectura objetivo marcando qué está ya implementado
+(✅) y qué queda planificado (⏳). El trabajo vivo está en [ISSUES.md](../ISSUES.md).
+
+---
+
+## Visión general
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Next.js (apps/web)                      │
-│  - Dashboard multi-tenant                                   │
-│  - Editor de campañas y plantillas                          │
-│  - Gestión de audiencias                                    │
-│  - Visualización de automatizaciones y métricas             │
+│                     Next.js (apps/web) ✅                   │
+│  Landing operativa · dashboard multi-tenant (Fase 1+)       │
 └─────────────────────────────┬───────────────────────────────┘
                               │ HTTP / JSON
 ┌─────────────────────────────▼───────────────────────────────┐
-│                     NestJS (apps/api)                       │
+│                     NestJS (apps/api) ✅                    │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
-│  │ Auth Module │  │ Organizations│  │ Campaigns Module   │  │
+│  │ Health ✅   │  │ Auth ⏳      │  │ Organizations ⏳    │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
-│  │ Subscribers │  │ Templates    │  │ Automations Module │  │
+│  │ Audiences ⏳│  │ Campaigns ⏳  │  │ Automations ⏳      │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 └─────────────┬───────────────────────┬───────────────────────┘
-              │                       │
+              │ Prisma ⏳             │ BullMQ ⏳
      ┌────────▼────────┐     ┌────────▼────────┐
      │   PostgreSQL    │     │  Redis + BullMQ │
-     │   (Prisma)      │     │  (colas)        │
      └─────────────────┘     └────────┬────────┘
                                       │
                              ┌────────▼────────┐
-                             │    Mailpit      │  ← Desarrollo
-                             │ (o Postal luego)│  ← Producción self-hosted
+                             │    Mailpit      │ ← desarrollo
+                             │ (Postal luego)  │ ← producción self-hosted
                              └─────────────────┘
 ```
+
+---
+
+## Estado por componente
+
+| Carpeta             | Contenido                                                           | Estado       |
+| ------------------- | ------------------------------------------------------------------- | ------------ |
+| `apps/api`          | NestJS 11, Express, módulo health (`GET /health`), CORS, `API_PORT` | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, landing estática      | ✅ Operativo |
+| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas      | ✅ Operativo |
+| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta            | ✅ Operativo |
+| `packages/database` | Prisma; schema intencionadamente vacío hasta Fase 1                 | ⏳ Fase 1    |
+| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                       | ✅ Operativo |
 
 ---
 
@@ -40,95 +55,136 @@ MailForge es una aplicación **multi-tenant** donde cada **Organization** (clien
 
 Usamos **Shared Database + tenant_id** (la más simple y escalable para empezar).
 
-- Casi todas las tablas tienen `organizationId`
-- Todos los queries del backend **obligatoriamente** filtran por `organizationId`
-- En NestJS usamos un `OrganizationGuard` + decorador `@CurrentOrganization()`
+- Casi todas las tablas tendrán `organizationId`
+- Todos los queries del backend filtrarán **obligatoriamente** por `organizationId`
+- En NestJS: un `OrganizationGuard` + decorador `@CurrentOrganization()` (Fase 1)
+- Invariante nº 1 del proyecto: RULE-005 de [AGENTS.md](../AGENTS.md)
 
-Ventajas:
-
-- Fácil de implementar
-- Buen rendimiento
-- Fácil de hacer backups
-
-Más adelante se puede evolucionar a schema-per-tenant si hiciera falta.
+Ventajas: fácil de implementar, buen rendimiento, backups simples.
+Evolución futura posible a schema-per-tenant si hiciera falta.
 
 ---
 
-## Flujo de envío de una campaña
+## Flujo de envío de una campaña (objetivo, Fase 3)
 
-1. Usuario crea una **Campaign** y elige una **Audience**
-2. El backend crea un job en la cola de BullMQ por cada suscriptor (o por lotes)
-3. Los workers van procesando los jobs
-4. Cada worker:
-   - Renderiza la plantilla con los datos del suscriptor
-   - Envía el email a través de Nodemailer → Mailpit (dev)
-   - Guarda un registro en `EmailLog`
-5. Los eventos de tracking (open, click, unsubscribe) actualizan el `EmailLog` y el estado del `Subscriber`
+1. Usuario crea una Campaign y elige una Audience
+2. El backend crea jobs en la cola BullMQ por cada suscriptor (o por lotes)
+3. Los workers procesan los jobs: renderizan plantilla con los datos del suscriptor,
+   envian vía Nodemailer a Mailpit (dev) y registran en EmailLog
+4. Los eventos de tracking (open, click, unsubscribe) actualizan EmailLog y el estado
+   del Subscriber
+
+La pieza ya construida para esto es renderTemplate() en packages/email:
+interpolación {{variable}} con escape HTML por defecto y variante estricta que
+falla antes de enviar si falta una variable.
 
 ---
 
-## Módulos principales del Backend (NestJS)
+## Estructura del monorepo
 
 ```
 apps/api/src/
-├── auth/
-├── organizations/
-├── users/
-├── audiences/
-├── subscribers/
-├── templates/
-├── campaigns/
-├── automations/
-├── tracking/
-├── queue/          # Configuración de BullMQ
-└── common/         # Guards, decorators, filters...
+  main.ts                  # bootstrap Nest
+  env.ts                   # lectura de configuración
+  app.module.ts            # módulo raíz
+  modules/health/          # controller + service + specs
+  *.integration.spec.ts    # supertest contra el servidor real
+apps/web/
+  src/app/                 # App Router: layout, page, globals.css
+  e2e/                     # specs Playwright
+  playwright.config.ts     # next start en :4123 tras build
+packages/shared/src/       # result, normalize-email, slugify, pagination, routes
+packages/email/src/        # render-template (+ specs)
+packages/database/         # prisma (Fase 1)
 ```
+
+Módulos backend planificados: auth, organizations, users, audiences, subscribers,
+templates, campaigns, automations, tracking, queue, common.
 
 ---
 
-## Packages compartidos
+## Estrategia de pruebas
 
-| Package             | Responsabilidad                              |
-| ------------------- | -------------------------------------------- |
-| `packages/database` | Schema de Prisma + cliente generado          |
-| `packages/shared`   | Tipos TypeScript, constantes, utils          |
-| `packages/email`    | Renderizado de plantillas + cliente de envío |
-| `packages/ui`       | Componentes React compartidos (opcional)     |
+Tres capas, todas ejecutables sin Docker:
+
+| Capa        | Herramientas                                        | Qué cubre                                                  |
+| ----------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| Unitaria    | Vitest por paquete (shared, email, api)             | Lógica pura: validaciones, render, servicios con mocks     |
+| Integración | Vitest + @nestjs/testing + unplugin-swc + supertest | DI real de Nest y capa HTTP completa contra /health        |
+| E2E         | Playwright (chromium)                               | La landing servida por next start tras build de producción |
+
+Detalles importantes:
+
+- **SWC en tests de API**: Nest depende de decorators legacy + metadata de tipos
+  (design:paramtypes). El transform por defecto de vitest (esbuild) la pierde;
+  unplugin-swc con legacyDecorator + decoratorMetadata la restaura.
+- **E2E contra producción**: Playwright arranca next start en 127.0.0.1:4123
+  (puerto dedicado, host explícito para evitar el flake localhost->::1), así cada PR
+  valida además el build real.
+- **Sin base de datos**: ninguna prueba depende de Postgres/Redis/Mailpit; esos
+  servicios llegan con Fase 1+ y traerán sus propias pruebas.
+
+---
+
+## Tooling de calidad
+
+| Pieza               | Cómo funciona                                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint 9            | Flat config única en la raíz; cada workspace hace eslint . resolviendo la config hacia arriba. typescript-eslint recommended (sin type-aware en Fase 0). |
+| Prettier            | Config raíz única; format / format:check. endOfLine lf + .gitattributes evitan ruido CRLF entre Windows/CI.                                              |
+| Husky + lint-staged | Pre-commit formatea/arregla solo lo staged. prepare: "husky                                                                                              |     | exit 0" tolera entornos sin git. |
+| Turborepo           | build respeta dependencias (^build); test tras builds de deps; e2e tras el build propio; dev persistente.                                                |
+| GitHub Actions      | Job en ubuntu: install --frozen-lockfile, format:check, lint, build, test, e2e (chromium cacheado). Reporte Playwright como artefacto solo si falla.     |
+
+---
+
+## Variables de entorno
+
+| Variable                   | Usada por         | Desde     | Por defecto           |
+| -------------------------- | ----------------- | --------- | --------------------- |
+| API_PORT                   | apps/api          | ahora     | 3001                  |
+| NEXT_PUBLIC_API_URL        | apps/web          | reservada | http://localhost:3001 |
+| DATABASE_URL               | packages/database | Fase 1    | -                     |
+| REDIS_URL                  | worker/queue      | Fase 3    | -                     |
+| JWT_SECRET, JWT_EXPIRES_IN | auth              | Fase 1    | -                     |
+| SMTP_*, SMTP_FROM          | envío email       | Fase 3    | -                     |
+
+Referencia canónica: .env.example en la raíz.
 
 ---
 
 ## Decisiones importantes de diseño
 
-### 1. ¿Por qué NestJS?
+### ¿Por qué NestJS?
 
-- Estructura modular muy clara
-- Excelente para aplicaciones multi-tenant
-- Decoradores y guards muy potentes
-- Buena integración con Prisma y BullMQ
+Estructura modular clara, guards/decoradores potentes para multi-tenant, buena
+integración con Prisma y BullMQ.
 
-### 2. ¿Por qué BullMQ y no solo enviar en el request?
+### ¿Por qué BullMQ y no enviar en el request?
 
-- Los envíos masivos no pueden hacerse de forma síncrona
-- Permite reintentos, rate limiting y control de concurrencia
-- Escala mucho mejor
+Los envíos masivos no pueden ser síncronos; la cola da reintentos, rate limiting y
+control de concurrencia.
 
-### 3. ¿Por qué Mailpit en desarrollo?
+### ¿Por qué Mailpit en desarrollo?
 
-- Cero configuración
-- Interfaz web para ver todos los emails enviados
-- No contamina la reputación de ningún dominio real
+Cero configuración, interfaz web, no contamina dominios reales.
 
-### 4. Autenticación
+### ¿Por qué tsc + node --watch en vez de @nestjs/cli o tsx?
 
-Empezamos con un sistema propio simple (JWT + refresh tokens) o Better Auth.  
-Más adelante se puede añadir login social si se quiere.
+tsx/esbuild no emite emitDecoratorMetadata y rompe la DI de Nest. tsc la emite
+nativamente; concurrently lanza watch de compilación y proceso. El CLI de Nest
+(webpack) se ahorra como dependencia pesada.
+
+### Autenticación (Fase 1)
+
+Sistema propio simple (JWT + refresh tokens) o Better Auth; login social después.
 
 ---
 
-## Seguridad básica que debemos implementar desde el principio
+## Seguridad desde el principio
 
-- Todas las rutas de negocio requieren autenticación
-- Todas las consultas filtran por `organizationId`
-- Validación de entrada con `class-validator` o Zod
-- Rate limiting en endpoints públicos (unsubscribe, tracking)
-- Los tokens de unsubscribe deben ser firmados y de un solo uso (o con expiración)
+- Todas las rutas de negocio requerirán autenticacion
+- Todas las consultas filtrarán por organizationId (RULE-005)
+- Validacion de entrada con class-validator o Zod
+- Rate limiting en endpoints publicos (unsubscribe, tracking)
+- Tokens de unsubscribe firmados y con expiracion

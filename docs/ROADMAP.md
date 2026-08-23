@@ -1,183 +1,75 @@
 # Roadmap de MailForge
 
-Plan de trabajo dividido para que **Esteban** y **Joseph** puedan avanzar en paralelo sin bloquearse.
+Plan por fases para que **Esteban** y **Joseph** avancen en paralelo sin bloquearse.
+
+> El estado real de cada tarea vive en [ISSUES.md](../ISSUES.md) con ids `TASK-XXXX`.
+> Este documento narra objetivos y orden; **no duplica estados**.
 
 ---
 
 ## Principios de distribución de trabajo
 
-1. **Contratos primero**: Antes de implementar una feature grande, acordamos la forma de la API (endpoints + tipos) en un Issue o en `packages/shared`.
-2. **Mocks cuando haga falta**: Joseph puede avanzar el frontend usando mocks o datos falsos mientras Esteban termina el backend.
-3. **PRs pequeños y frecuentes**: Mejor 5 PRs pequeños que 1 PR gigante.
-4. **Comunicación diaria**: Comentad en el Issue o en el PR lo que estáis haciendo.
-5. **Nadie espera al otro**: Si una parte no está lista, se usa un mock o se trabaja en otra tarea de la misma fase.
+1. **Contratos primero**: antes de una feature grande, se acuerda la forma de la API (endpoints + tipos) en packages/shared o en su TASK.
+2. **Mocks cuando haga falta**: el frontend puede avanzar con datos falsos mientras el backend termina.
+3. **PRs pequeños y frecuentes**: mejor 5 PRs pequeños que 1 gigante.
+4. **Nadie espera al otro**: si algo no está listo, mock u otra tarea de la misma fase.
+5. **Bloqueo > 1 día**: avisar y reasignar la TASK.
 
 ---
 
-## Fase 0 – Fundación del repositorio (3-5 días)
+## Fase 0 – Fundación del repositorio ✅ COMPLETADA
 
-**Objetivo:** Que los dos podáis clonar el repo, levantar todo con Docker y empezar a codear sin fricción.
+**Objetivo:** clonar, instalar y trabajar sin fricción, con calidad automatizada.
 
-### Tareas de Esteban (Backend / Infra)
+| Tareas                                                                                                     | Ids                   |
+| ---------------------------------------------------------------------------------------------------------- | --------------------- |
+| Monorepo + docs iniciales; API mínima (/health); Web landing (Tailwind); packages/shared y email con tests | TASK-0001 … TASK-0005 |
+| ESLint + Prettier + Husky; tests unit/integración/E2E; turbo tasks; CI; documentación del workflow         | TASK-0006 … TASK-0014 |
+| Pendiente: verificar docker compose en máquina real                                                        | TASK-0015             |
 
-- [ ] Inicializar monorepo con `pnpm` + Turborepo
-- [ ] Crear `docker-compose.yml` con:
-  - PostgreSQL
-  - Redis
-  - Mailpit
-- [ ] Configurar Prisma en `packages/database`
-- [ ] Crear el proyecto NestJS base en `apps/api`
-- [ ] Hacer que la API arranque y se conecte a la base de datos
-- [ ] Crear archivo `.env.example`
-
-### Tareas de Joseph (Frontend / Tooling)
-
-- [ ] Configurar ESLint + Prettier + Husky + lint-staged
-- [ ] Crear el proyecto Next.js 15 en `apps/web`
-- [ ] Configurar Tailwind CSS + shadcn/ui (estructura base)
-- [ ] Crear layout inicial y página de “Hello MailForge”
-- [ ] Escribir/refinar `README.md` y `docs/SETUP.md`
-- [ ] Configurar los templates de GitHub (Issue + PR)
-
-**Criterio de terminado de Fase 0:**  
-Cualquiera de los dos puede hacer `pnpm install && pnpm dev` y ver la API + el frontend funcionando con Docker levantado.
+Criterio cumplido: `pnpm install && pnpm dev` levanta API (:3001) + Web (:3000)
+sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 
 ---
 
 ## Fase 1 – Multi-tenant + Autenticación (1.5 – 2 semanas)
 
-**Objetivo:** Poder registrarse, crear organizaciones (clientes) y cambiar de organización.
+**Objetivo:** registrarse, crear organizaciones y cambiar entre ellas.
 
-### Tareas de Esteban (Backend)
+| Área     | Tareas                                                                                                             | Ids                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| Backend  | Modelos User/Organization/OrganizationMember; Prisma en la API; auth JWT; CRUD orgs + roles + guard organizationId | TASK-0016 … TASK-0019 |
+| Frontend | Login/registro; layout autenticado; organization switcher; protección de rutas                                     | TASK-0020, TASK-0021  |
 
-- [ ] Modelo de datos: `User`, `Organization`, `OrganizationMember`
-- [ ] Módulo de autenticación (registro + login + JWT o Better Auth)
-- [ ] CRUD de Organizations
-- [ ] Sistema de roles (owner, admin, member)
-- [ ] Middleware / Guard que inyecte el `organizationId` actual
-- [ ] Endpoints protegidos de prueba
-
-### Tareas de Joseph (Frontend)
-
-- [ ] Páginas de Login y Registro
-- [ ] Página de “Crear organización”
-- [ ] Selector de organización (organization switcher)
-- [ ] Layout autenticado (sidebar básica)
-- [ ] Protección de rutas (middleware de Next.js)
-- [ ] Integración con la API de auth (aunque sea con mocks al principio)
-
-**Paralelismo:** Joseph puede empezar las pantallas con datos mockeados. Cuando Esteban tenga los endpoints, se conectan.
+**Paralelismo:** Joseph puede empezar pantallas con mocks mientras Esteban levanta Prisma/auth.
 
 ---
 
-## Fase 2 – Gestión de Audiencias y Suscriptores (1.5 – 2 semanas)
+## Fase 2 – Audiencias y Suscriptores (1.5 – 2 semanas)
 
-**Objetivo:** Cada organización puede tener listas y suscriptores.
+**Objetivo:** cada organización gestiona listas y suscriptores.
 
-### Tareas de Esteban
-
-- [ ] Modelos: `Audience`, `Subscriber`, `SubscriberTag`
-- [ ] Endpoints CRUD de Audiences
-- [ ] Endpoints de Suscriptores (crear, listar, buscar, cambiar estado)
-- [ ] Importación de CSV (endpoint + procesamiento)
-- [ ] Validación de emails y control de estado (`subscribed`, `unsubscribed`, `bounced`)
-
-### Tareas de Joseph
-
-- [ ] Página de listado de Audiencias
-- [ ] Página de detalle de una Audiencia (tabla de suscriptores)
-- [ ] Modal/formulario de creación de suscriptor
-- [ ] Componente de importación de CSV
-- [ ] Filtros y búsqueda de suscriptores
-- [ ] Indicadores de estado visuales
+| Área     | Tareas                                                                                              | Ids                  |
+| -------- | --------------------------------------------------------------------------------------------------- | -------------------- |
+| Backend  | Modelos Audience/Subscriber; endpoints CRUD; importación CSV; validación y estados                  | TASK-0022, TASK-0023 |
+| Frontend | Listado/detalle de audiencias; alta de suscriptores; filtros; indicadores de estado; shadcn/ui base | TASK-0024, TASK-0025 |
 
 ---
 
-## Fase 3 – Campañas one-shot + Motor de envío (2 – 2.5 semanas)
+## Fases 3+ — Por desglosar
 
-**Objetivo:** Crear una campaña, elegir audiencia y enviarla (aunque sea a Mailpit).
-
-### Tareas de Esteban
-
-- [ ] Modelos: `Template`, `Campaign`, `EmailLog`
-- [ ] Sistema de plantillas simples (HTML + variables `{{nombre}}`)
-- [ ] Creación y programación de campañas
-- [ ] Cola de envío con BullMQ
-- [ ] Worker que procesa los envíos
-- [ ] Rate limiting básico
-- [ ] Integración con Mailpit (Nodemailer)
-
-### Tareas de Joseph
-
-- [ ] Editor de plantillas simple (textarea + preview)
-- [ ] Wizard de creación de campaña
-- [ ] Selector de audiencia
-- [ ] Página de detalle de campaña (estado del envío)
-- [ ] Lista de campañas
-- [ ] Visualización de logs de envío
-
----
-
-## Fase 4 – Tracking y Unsubscribe (1 semana)
-
-### Tareas de Esteban
-
-- [ ] Pixel de apertura
-- [ ] Tracking de clics (redirección con registro)
-- [ ] Endpoint y lógica de unsubscribe
-- [ ] Actualización automática de estado del suscriptor
-- [ ] Webhooks internos de eventos
-
-### Tareas de Joseph
-
-- [ ] Página pública de unsubscribe (bonita y clara)
-- [ ] Dashboard básico de métricas de una campaña (abiertos, clics, bajas)
-- [ ] Mostrar estadísticas en el detalle de campaña
-
----
-
-## Fase 5 – Automatizaciones B2C simples (2 – 3 semanas)
-
-**Objetivo:** Tener al menos 2-3 flujos automáticos.
-
-### Flujos prioritarios
-
-1. Email de bienvenida (al suscribirse)
-2. Re-engagement (inactividad)
-3. Carrito abandonado (simulado con eventos)
-
-### Tareas de Esteban
-
-- [ ] Modelo de `Automation` / `Journey`
-- [ ] Motor simple de journeys (estados + delays)
-- [ ] Triggers (evento de suscripción, evento personalizado…)
-- [ ] Ejecución de pasos de la automatización
-
-### Tareas de Joseph
-
-- [ ] Interfaz para crear/editar automatizaciones
-- [ ] Visualización del flujo (aunque sea lista de pasos al principio)
-- [ ] Página de métricas de automatizaciones
-- [ ] Simulador de eventos (para probar)
-
----
-
-## Fase 6 – Pulido y preparación self-hosted (ongoing)
-
-- Mejoras de UI/UX
-- Dominios de envío por organización
-- Mejor editor de plantillas
-- Documentación de despliegue en VPS
-- Preparar para usar Postal o docker-mailserver en el futuro
+Fase 3 (campañas one-shot + motor de envío con BullMQ), Fase 4 (tracking y
+unsubscribe), Fase 5 (automatizaciones B2C), Fase 6 (pulido self-hosted) se
+desglosarán en TASKs (a partir de TASK-0026) al llegar a cada fase, siguiendo
+el protocolo de ISSUES.md.
 
 ---
 
 ## Cómo usar este Roadmap
 
-1. Cread un **Milestone** en GitHub por cada Fase.
-2. Cread **Issues** por cada tarea grande.
-3. Asignad el Issue a Esteban o a Joseph.
-4. Trabajad en ramas `feature/...`
-5. Cuando terminéis una tarea, cerrad el Issue y actualizad este archivo si es necesario.
+1. Cada fase puede mapearse a un Milestone de GitHub si se desea.
+2. Las tareas se gestionan SOLO desde ISSUES.md (alta, estado, cierre).
+3. Ramas feature/task-XXXX-slug; PRs revisados; squash merge.
+4. Al cerrar tareas de una fase, comprobar si queda algo pendiente antes de abrir la siguiente.
 
-**Regla de oro:** Si estás bloqueado esperando al otro, avisa y trabaja en otra tarea de la misma fase o en mejoras de la fase anterior.
+**Regla de oro:** bloqueado esperando al otro → avisa, usa un mock o coge otra tarea de la misma fase.
