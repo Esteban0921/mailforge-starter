@@ -12,7 +12,6 @@ async function bootstrap(): Promise<void> {
 
   const port = readApiPort();
   await app.listen(port);
-   
   console.log(`[api] MailForge API escuchando en http://localhost:${port}`);
 }
 

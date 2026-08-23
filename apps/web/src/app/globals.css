@@ -11,8 +11,7 @@
 
   /* Cast-plate sans for the hero, machine mono for everything operational. */
   --font-display:
-    ui-sans-serif, 'Segoe UI Variable Display', 'Segoe UI', -apple-system,
-    system-ui, sans-serif;
+    ui-sans-serif, 'Segoe UI Variable Display', 'Segoe UI', -apple-system, system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, 'SF Mono', monospace;
 }
 
