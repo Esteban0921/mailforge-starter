@@ -35,7 +35,7 @@ tiene un identificador estable `TASK-XXXX`; los estados viven aquí y solo aquí
 | TASK-0015 | Verificar docker compose (Postgres/Redis/Mailpit) en máquina real        | Esteban     | Pendiente | —          | Requiere Docker instalado                                                      |
 | TASK-0016 | Prisma: modelos User/Organization/OrganizationMember + primera migración | Esteban     | En curso  | —          | Modelos + migración init generada; falta aplicarla contra Postgres (TASK-0015) |
 | TASK-0017 | Conectar PrismaModule a la API + health check de BD                      | Esteban     | Pendiente | —          | Fase 1                                                                         |
-| TASK-0018 | Módulo auth: registro + login + JWT access/refresh                       | Esteban     | Pendiente | —          | Fase 1                                                                         |
+| TASK-0018 | Módulo auth: registro + login + JWT access/refresh                       | Esteban     | Pendiente | —          | Fase 1; incluye ValidationPipe global + class-validator (nada que validar aún) |
 | TASK-0019 | CRUD Organizations + roles + guard organizationId                        | Esteban     | Pendiente | —          | Fase 1                                                                         |
 | TASK-0020 | UI login/registro + layout autenticado con sidebar                       | Joseph      | En curso  | —          | UI y layout en f2d94dc sobre store mock; real con TASK-0018                    |
 | TASK-0021 | Organization switcher + protección de rutas Next                         | Joseph      | Pendiente | —          | Guard de cliente ya en f2d94dc; falta el switcher                              |
@@ -43,6 +43,35 @@ tiene un identificador estable `TASK-XXXX`; los estados viven aquí y solo aquí
 | TASK-0023 | Importación de suscriptores por CSV                                      | Esteban     | Pendiente | —          | Fase 2                                                                         |
 | TASK-0024 | UI audiencias/suscriptores: listado, alta, filtros, estados              | Joseph      | Pendiente | —          | Fase 2                                                                         |
 | TASK-0025 | Adoptar shadcn/ui + tokens de diseño base                                | Joseph      | Pendiente | —          | Fase 2                                                                         |
+
+## Auditoría transversal 2026-08-25 (backend + frontend + proceso)
+
+Tres agentes de exploración auditaron apps/api, apps/web y el resto del repo (docs,
+dependencias, packages/shared, packages/email, CI) contra las reglas de AGENTS.md.
+TASK-0026 a TASK-0030 son el trabajo que salió de ahí y se cerró en la misma sesión;
+TASK-0031 en adelante son los hallazgos que quedan pendientes de priorizar.
+
+| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                                   |
+| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | ------------------------------------------------------------------------------ |
+| TASK-0026 | Backend: hardening base (CORS por entorno, Helmet, rate limiting, env) | Agente      | Hecha     | 2026-08-25 | CORS_ORIGIN, helmet, @nestjs/throttler, bootstrap fail-fast, readApiPort avisa |
+| TASK-0027 | Frontend: sidebar del dashboard responsive (mobile-first)              | Agente      | Hecha     | 2026-08-25 | Bloqueante del audit: 87px útiles en 375px antes del fix                       |
+| TASK-0028 | Frontend: accesibilidad y estados reales en los formularios de auth    | Agente      | Hecha     | 2026-08-25 | Foco visible, error por campo, weak_password ya no es dead code                |
+| TASK-0029 | Frontend: páginas de sistema (404, error boundary, favicon, loading)   | Agente      | Hecha     | 2026-08-25 | No existía ninguna antes del audit                                             |
+| TASK-0030 | Frontend: extraer Wordmark + hook de auth, adoptar APP_ROUTES          | Agente      | Hecha     | 2026-08-25 | APP_ROUTES era un contrato muerto desde TASK-0020                              |
+| TASK-0031 | Backend: verificación de email de usuario (campo + flujo)              | Esteban     | Pendiente | —          | Depende de decidir SMTP en Fase 1 vs Fase 3; Mailpit ya disponible             |
+| TASK-0032 | Backend: recuperación de contraseña (forgot/reset)                     | Esteban     | Pendiente | —          | No está en el alcance actual de TASK-0018, falta decidir si entra ahí          |
+| TASK-0033 | Backend: invitaciones a Organization (modelo + flujo + token)          | Esteban     | Pendiente | —          | Fase 1, relacionado con TASK-0019                                              |
+| TASK-0034 | Backend: email case-insensitive a nivel de esquema (citext / índice)   | Esteban     | Pendiente | —          | Hoy solo lo garantiza normalizeEmail() en aplicación, no la BD                 |
+| TASK-0035 | Backend: estrategia de soft-delete/retención de datos de negocio       | Esteban     | Pendiente | —          | Decidir antes de que TASK-0022 empiece a acumular suscriptores                 |
+| TASK-0036 | Frontend: sistema de toasts/notificaciones + loaders globales          | Joseph      | Pendiente | —          | Fase 2                                                                         |
+| TASK-0037 | Frontend: página de perfil de usuario (nombre, contraseña)             | Joseph      | Pendiente | —          | Fase 2                                                                         |
+| TASK-0038 | Frontend: página de ajustes de organización (nombre, branding)         | Joseph      | Pendiente | —          | Distinta del switcher de TASK-0021                                             |
+| TASK-0039 | Frontend: infraestructura de testing de componentes (Testing Library)  | Joseph      | Pendiente | —          | vitest.config usa environment:'node'; hoy no se puede testear JSX              |
+| TASK-0040 | Frontend: pase sistemático de accesibilidad (eslint-plugin-jsx-a11y)   | Joseph      | Pendiente | —          | Fase 2, más allá de los fixes puntuales de TASK-0028                           |
+| TASK-0041 | Frontend: navegación responsive completa (drawer, breadcrumbs)         | Joseph      | Pendiente | —          | TASK-0027 resolvió lo bloqueante; esto es la versión pulida                    |
+| TASK-0042 | Proceso: quitar typescript-eslint de 4 package.json sin uso propio     | Esteban     | Pendiente | —          | Solo la config raíz lo usa; RULE-010                                           |
+| TASK-0043 | Proceso: test directo de validatePassword en packages/shared           | Esteban     | Pendiente | —          | Hoy solo cubierto indirectamente vía apps/web/store.spec.ts                    |
+| TASK-0044 | Proceso: decidir soporte dot-path en variables de renderTemplate       | Esteban     | Pendiente | —          | Fase 3; el regex ya acepta puntos pero el docstring dice claves planas         |
 
 ## Fase 3 y siguientes — Pendiente de desglosar
 

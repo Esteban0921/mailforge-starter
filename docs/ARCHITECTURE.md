@@ -40,14 +40,14 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 
 ## Estado por componente
 
-| Carpeta             | Contenido                                                           | Estado       |
-| ------------------- | ------------------------------------------------------------------- | ------------ |
-| `apps/api`          | NestJS 11, Express, módulo health (`GET /health`), CORS, `API_PORT` | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, landing estática      | ✅ Operativo |
-| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas      | ✅ Operativo |
-| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta            | ✅ Operativo |
-| `packages/database` | Prisma; schema intencionadamente vacío hasta Fase 1                 | ⏳ Fase 1    |
-| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                       | ✅ Operativo |
+| Carpeta             | Contenido                                                               | Estado       |
+| ------------------- | ----------------------------------------------------------------------- | ------------ |
+| `apps/api`          | NestJS 11, Express, módulo health (`GET /health`), CORS, `API_PORT`     | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, landing estática          | ✅ Operativo |
+| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas          | ✅ Operativo |
+| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                | ✅ Operativo |
+| `packages/database` | Prisma; modelos base + migración inicial (TASK-0016), pendiente aplicar | 🔧 Fase 1    |
+| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                           | ✅ Operativo |
 
 ---
 
@@ -140,15 +140,17 @@ Detalles importantes:
 
 ## Variables de entorno
 
-| Variable                   | Usada por         | Desde     | Por defecto           |
-| -------------------------- | ----------------- | --------- | --------------------- |
-| API_PORT                   | apps/api          | ahora     | 3001                  |
-| NEXT_PUBLIC_API_URL        | apps/web          | reservada | http://localhost:3001 |
-| NEXT_DIST_DIR              | apps/web          | opcional  | .next                 |
-| DATABASE_URL               | packages/database | Fase 1    | -                     |
-| REDIS_URL                  | worker/queue      | Fase 3    | -                     |
-| JWT_SECRET, JWT_EXPIRES_IN | auth              | Fase 1    | -                     |
-| SMTP_*, SMTP_FROM          | envío email       | Fase 3    | -                     |
+| Variable                   | Usada por         | Desde     | Por defecto              |
+| -------------------------- | ----------------- | --------- | ------------------------ |
+| API_PORT                   | apps/api          | ahora     | 3001                     |
+| CORS_ORIGIN                | apps/api          | ahora     | refleja cualquier origin |
+| NEXT_PUBLIC_API_URL        | apps/web          | reservada | http://localhost:3001    |
+| NEXT_DIST_DIR              | apps/web          | opcional  | .next                    |
+| E2E_PORT                   | apps/web (E2E)    | opcional  | 4123                     |
+| DATABASE_URL               | packages/database | Fase 1    | -                        |
+| REDIS_URL                  | worker/queue      | Fase 3    | -                        |
+| JWT_SECRET, JWT_EXPIRES_IN | auth              | Fase 1    | -                        |
+| SMTP_*, SMTP_FROM          | envío email       | Fase 3    | -                        |
 
 Referencia canónica: .env.example en la raíz.
 

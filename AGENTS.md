@@ -20,14 +20,14 @@ pnpm e2e                       # Playwright contra build producción (:3100)
 
 ## Mapa del proyecto
 
-| Ruta              | Contenido                                | Estado       |
-| ----------------- | ---------------------------------------- | ------------ |
-| apps/api          | NestJS 11 · health check · sin DB aún    | Operativo    |
-| apps/web          | Next.js 15 + Tailwind v4 · landing       | Operativo    |
-| packages/shared   | utils multi-paquete + contratos de rutas | Operativo    |
-| packages/email    | renderizador de plantillas {{var}}       | Operativo    |
-| packages/database | Prisma (schema vacío)                    | Fase 1       |
-| ISSUES.md         | ledger de tareas TASK-XXXX               | Fuente única |
+| Ruta              | Contenido                                           | Estado       |
+| ----------------- | --------------------------------------------------- | ------------ |
+| apps/api          | NestJS 11 · health check · sin DB aún               | Operativo    |
+| apps/web          | Next.js 15 + Tailwind v4 · landing                  | Operativo    |
+| packages/shared   | utils multi-paquete + contratos de rutas            | Operativo    |
+| packages/email    | renderizador de plantillas {{var}}                  | Operativo    |
+| packages/database | Prisma: modelos User/Org/Member + migración inicial | Fase 1       |
+| ISSUES.md         | ledger de tareas TASK-XXXX                          | Fuente única |
 
 ---
 
