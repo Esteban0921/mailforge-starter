@@ -116,3 +116,35 @@ Exporta un espejo antes de instalar:
 
 Ejecuta siempre los comandos desde la raíz con el filtro:
 `pnpm --filter @mailforge/database <comando>`
+
+### `Error: spawn UNKNOWN` al ejecutar cualquier comando de turbo
+
+En Windows, `turbo.exe` puede quedar bloqueado por una directiva de **Control
+de aplicaciones** (WDAC / Smart App Control): el binario está instalado pero el
+sistema se niega a ejecutarlo. Se reconoce porque falla igual `pnpm lint`,
+`pnpm build`, `pnpm test` y `pnpm e2e`, todos con `errno -4094`, y al invocar
+el `.exe` a mano Windows responde _"una directiva de Control de aplicaciones
+bloqueó este archivo"_.
+
+No es un problema del repo y no se arregla reinstalando. Mientras dure el
+bloqueo, las puertas de RULE-004 se pueden pasar sin turbo:
+
+```bash
+pnpm format:check
+pnpm exec eslint .
+pnpm -r run build
+pnpm -r run test
+pnpm --filter @mailforge/web e2e
+```
+
+La solución de fondo es permitir el binario en la política de App Control de la
+máquina; eso lo decide quien administre el equipo.
+
+### El build de los E2E choca con un `next dev` abierto
+
+`next dev` y `next build` escriben los dos en `apps/web/.next`. Lo más simple es
+parar el dev server antes de `pnpm e2e`. Si necesitas los dos a la vez existe la
+escotilla `NEXT_DIST_DIR` (p. ej. `.next-e2e`, ya ignorado en git), pero al
+usarla Next reescribe
+`next-env.d.ts` y `apps/web/tsconfig.json` apuntando al directorio nuevo: son
+ficheros trackeados, así que reviértelos antes de commitear.
