@@ -17,7 +17,11 @@ export default function DashboardPage() {
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {MODULES.map((name) => (
-          <div key={name} className="rounded-lg border border-hierro-2 bg-hierro-2/40 p-5">
+          <div
+            key={name}
+            data-testid={`module-card-${name}`}
+            className="rounded-lg border border-hierro-2 bg-hierro-2/40 p-5"
+          >
             <p className="font-mono text-xs tracking-[0.2em] text-brasa uppercase">{name}</p>
             <p className="mt-2 text-sm text-ceniza">Módulo en forja — próxima fase.</p>
           </div>

@@ -1,3 +1,6 @@
+import { APP_ROUTES } from '@mailforge/shared';
+import { Wordmark } from '@/components/wordmark';
+
 const pillars = [
   {
     title: 'Multi-tenant',
@@ -24,11 +27,11 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col bg-hierro font-display text-papel">
       <header className="flex items-center justify-between border-b border-hierro-2 px-6 py-4 sm:px-10">
-        <span className="font-mono text-sm tracking-widest">⬥ MAILFORGE</span>
+        <Wordmark />
         <nav className="flex gap-6 font-mono text-xs tracking-wider text-ceniza">
           <a
             className="transition-colors hover:text-brasa focus-visible:text-brasa focus-visible:outline-none"
-            href="/login"
+            href={APP_ROUTES.login}
           >
             ENTRAR
           </a>

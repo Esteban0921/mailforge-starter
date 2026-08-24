@@ -60,4 +60,37 @@ test.describe('auth flow (mock)', () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByTestId('dashboard-user')).toHaveText('Ana Pérez');
   });
+
+  test('dashboard shows the real module cards, not a placeholder', async ({ page }) => {
+    await fillRegister(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    for (const name of ['Audiencias', 'Campañas', 'Automatizaciones', 'Tracking']) {
+      await expect(page.getByTestId(`module-card-${name}`)).toBeVisible();
+    }
+  });
+
+  test('disabled nav items are inert, not fake links', async ({ page }) => {
+    await fillRegister(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    for (const label of ['Audiencias', 'Campañas', 'Automatizaciones']) {
+      const item = page.getByTestId(`nav-${label}`);
+      await expect(item).toHaveAttribute('aria-disabled', 'true');
+      await expect(item).not.toHaveAttribute('href', /.+/);
+    }
+  });
+
+  test('duplicate email is flagged on the email field, not as a generic error', async ({
+    page,
+  }) => {
+    await fillRegister(page);
+    await page.getByTestId('logout-button').click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    await fillRegister(page);
+    await expect(page).toHaveURL(/\/register$/);
+    await expect(page.getByLabel('Email')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('ya tiene cuenta')).toBeVisible();
+  });
 });

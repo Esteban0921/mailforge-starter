@@ -1,27 +1,38 @@
 'use client';
 
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { useId, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
 /**
  * Shared forge-styled primitives for the auth forms.
  * Errors render in brasa; focus states are always visible.
  */
 
+// No focus:outline-none here: in this Tailwind v4 build, :focus and
+// :focus-visible utilities have equal specificity and :focus-visible does
+// NOT reliably win the cascade, so pairing them silently cancels the ring.
+// Text inputs match :focus-visible on click too, so this alone is enough.
 const inputClasses =
   'w-full rounded-md border border-hierro-2 bg-hierro px-3 py-2 text-sm text-papel ' +
-  'placeholder:text-ceniza/60 focus:border-brasa focus:outline-none';
+  'placeholder:text-ceniza/60 transition-colors focus:border-brasa ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brasa';
 
 export function AuthField({
   label,
   error,
   ...inputProps
 }: { label: string; error?: string } & ComponentPropsWithoutRef<'input'>) {
+  const errorId = useId();
   return (
     <label className="flex flex-col gap-1.5">
       <span className="font-mono text-xs tracking-[0.15em] text-ceniza uppercase">{label}</span>
-      <input className={inputClasses} aria-invalid={error ? true : undefined} {...inputProps} />
+      <input
+        className={inputClasses}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        {...inputProps}
+      />
       {error ? (
-        <span role="alert" className="text-xs text-brasa">
+        <span id={errorId} role="alert" className="text-xs text-brasa">
           {error}
         </span>
       ) : null}

@@ -1,24 +1,27 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { APP_ROUTES } from '@mailforge/shared';
 import { getAuthStore } from '@/lib/auth';
+import { Wordmark } from '@/components/wordmark';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', enabled: true },
-  { href: '/dashboard', label: 'Audiencias', enabled: false },
-  { href: '/dashboard', label: 'Campañas', enabled: false },
-  { href: '/dashboard', label: 'Automatizaciones', enabled: false },
+  { href: APP_ROUTES.dashboard, label: 'Dashboard', enabled: true },
+  { href: APP_ROUTES.dashboard, label: 'Audiencias', enabled: false },
+  { href: APP_ROUTES.dashboard, label: 'Campañas', enabled: false },
+  { href: APP_ROUTES.dashboard, label: 'Automatizaciones', enabled: false },
 ] as const;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [status, setStatus] = useState<'checking' | 'ok'>('checking');
 
   useEffect(() => {
     const session = getAuthStore().getSession();
     if (session === null) {
-      router.replace('/login');
+      router.replace(APP_ROUTES.login);
       return;
     }
     setStatus('ok');
@@ -33,35 +36,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-hierro text-papel">
-      <aside className="flex w-56 flex-col border-r border-hierro-2 px-4 py-6">
-        <a href="/" className="font-mono text-sm tracking-widest">
-          ⬥ MAILFORGE
-        </a>
+    <div className="flex min-h-screen flex-col bg-hierro text-papel md:flex-row">
+      <aside className="flex w-full flex-col border-b border-hierro-2 px-4 py-6 md:w-56 md:border-r md:border-b-0">
+        <Wordmark href={APP_ROUTES.home} />
         <nav className="mt-8 flex flex-col gap-1" data-testid="dashboard-nav">
           {NAV_ITEMS.map((item) =>
             item.enabled ? (
               <a
                 key={item.label}
                 href={item.href}
-                className="rounded-md px-3 py-2 font-mono text-xs tracking-wider text-papel hover:bg-hierro-2"
+                data-testid={`nav-${item.label}`}
+                aria-current={pathname === item.href ? 'page' : undefined}
+                className={`rounded-md px-3 py-2 font-mono text-xs tracking-wider transition-colors hover:bg-hierro-2 ${
+                  pathname === item.href ? 'bg-hierro-2 text-brasa' : 'text-papel'
+                }`}
               >
                 {item.label}
               </a>
             ) : (
               <span
                 key={item.label}
-                className="cursor-not-allowed rounded-md px-3 py-2 font-mono text-xs tracking-wider text-ceniza/50"
+                data-testid={`nav-${item.label}`}
+                aria-disabled="true"
+                className="cursor-not-allowed rounded-md px-3 py-2 font-mono text-xs tracking-wider text-ceniza/70"
                 title="Disponible en próximas fases"
               >
                 {item.label}
+                <span className="sr-only"> (disponible en próximas fases)</span>
               </span>
             ),
           )}
         </nav>
         <UserFooter />
       </aside>
-      <div className="flex-1 px-8 py-8">{children}</div>
+      <div className="flex-1 px-4 py-8 sm:px-8">{children}</div>
     </div>
   );
 }
@@ -77,7 +85,7 @@ function UserFooter() {
 
   async function handleLogout() {
     await getAuthStore().logout();
-    router.replace('/login');
+    router.replace(APP_ROUTES.login);
   }
 
   if (user === null) return null;
@@ -91,7 +99,7 @@ function UserFooter() {
         type="button"
         onClick={handleLogout}
         data-testid="logout-button"
-        className="rounded-md px-3 py-2 text-left font-mono text-xs tracking-wider text-ceniza hover:bg-hierro-2 hover:text-brasa"
+        className="rounded-md px-3 py-2 text-left font-mono text-xs tracking-wider text-ceniza transition-colors hover:bg-hierro-2 hover:text-brasa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brasa"
       >
         Cerrar sesión
       </button>

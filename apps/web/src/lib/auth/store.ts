@@ -78,8 +78,11 @@ export function createAuthStore(storage: StorageLike): AuthStore {
   return {
     async register(input) {
       const email = normalizeEmail(input.email);
-      if (!email.ok || input.name.trim().length === 0 || !validatePassword(input.password)) {
+      if (!email.ok || input.name.trim().length === 0) {
         return err('invalid_input');
+      }
+      if (!validatePassword(input.password)) {
+        return err('weak_password');
       }
 
       await sleep(MOCK_LATENCY_MS);

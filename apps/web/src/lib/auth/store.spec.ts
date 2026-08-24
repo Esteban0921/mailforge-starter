@@ -48,11 +48,15 @@ describe('createAuthStore (mock)', () => {
     expect(second).toEqual({ ok: false, error: 'email_already_registered' });
   });
 
-  it('rejects weak passwords and empty names', async () => {
+  it('rejects a weak password with its own error, not a generic one', async () => {
     const store = createAuthStore(storage);
     expect(
       await store.register({ name: 'Ana', email: 'ana@example.com', password: 'corta' }),
-    ).toEqual({ ok: false, error: 'invalid_input' });
+    ).toEqual({ ok: false, error: 'weak_password' });
+  });
+
+  it('rejects an empty name as invalid input', async () => {
+    const store = createAuthStore(storage);
     expect(
       await store.register({
         name: '   ',
