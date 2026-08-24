@@ -40,7 +40,9 @@ test.describe('auth flow (mock)', () => {
     await page.getByLabel('Contraseña').fill('contraseña-incorrecta');
     await page.getByRole('button', { name: 'Entrar' }).click();
 
-    await expect(page.getByRole('alert')).toContainText('incorrectos');
+    // Scoped to the form: Next's route announcer is also role="alert" and would
+    // make a bare getByRole('alert') ambiguous under strict mode.
+    await expect(page.locator('form').getByRole('alert')).toContainText('incorrectos');
     await expect(page).toHaveURL(/\/login$/);
   });
 
