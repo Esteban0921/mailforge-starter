@@ -46,6 +46,7 @@ model OrganizationMember {
   userId         String
   role           UserRole @default(member)
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
