@@ -144,6 +144,7 @@ Detalles importantes:
 | -------------------------- | ----------------- | --------- | --------------------- |
 | API_PORT                   | apps/api          | ahora     | 3001                  |
 | NEXT_PUBLIC_API_URL        | apps/web          | reservada | http://localhost:3001 |
+| NEXT_DIST_DIR              | apps/web (E2E)    | ahora     | .next                 |
 | DATABASE_URL               | packages/database | Fase 1    | -                     |
 | REDIS_URL                  | worker/queue      | Fase 3    | -                     |
 | JWT_SECRET, JWT_EXPIRES_IN | auth              | Fase 1    | -                     |
