@@ -42,7 +42,7 @@ tiene un identificador estable `TASK-XXXX`; los estados viven aquí y solo aquí
 | TASK-0022 | Modelos Audience/Subscriber + endpoints CRUD + validación                | Esteban     | Pendiente | —          | Fase 2                                                                         |
 | TASK-0023 | Importación de suscriptores por CSV                                      | Esteban     | Pendiente | —          | Fase 2                                                                         |
 | TASK-0024 | UI audiencias/suscriptores: listado, alta, filtros, estados              | Joseph      | Pendiente | —          | Fase 2                                                                         |
-| TASK-0025 | Adoptar shadcn/ui + tokens de diseño base                                | Joseph      | Pendiente | —          | Fase 2                                                                         |
+| TASK-0025 | Adoptar shadcn/ui + tokens de diseño base                                | Agente      | Hecha     | 2026-08-25 | Adelantada a petición de Esteban; ver TASK-0045 para el alcance real           |
 
 ## Auditoría transversal 2026-08-25 (backend + frontend + proceso)
 
@@ -73,8 +73,18 @@ TASK-0031 en adelante son los hallazgos que quedan pendientes de priorizar.
 | TASK-0043 | Proceso: test directo de validatePassword en packages/shared           | Esteban     | Pendiente | —          | Hoy solo cubierto indirectamente vía apps/web/store.spec.ts                    |
 | TASK-0044 | Proceso: decidir soporte dot-path en variables de renderTemplate       | Esteban     | Pendiente | —          | Fase 3; el regex ya acepta puntos pero el docstring dice claves planas         |
 
+## Rediseño visual 2026-08-25
+
+Esteban probó la app, notó que "aún no está terminado" y pidió cambiar el estilo del
+frontend por uno minimalista y moderno. Tras confirmar dirección (claro estilo SaaS,
+abandonando la identidad "forja"), se ejecutó en la misma sesión.
+
+| ID        | Título                                                               | Responsable | Estado | Cierre     | Refs / Notas                                                           |
+| --------- | -------------------------------------------------------------------- | ----------- | ------ | ---------- | ---------------------------------------------------------------------- |
+| TASK-0045 | Rediseño visual completo: paleta clara, Inter, sin identidad "forja" | Agente      | Hecha  | 2026-08-25 | Toca landing/auth/dashboard/páginas de sistema; copy también reescrito |
+
 ## Fase 3 y siguientes — Pendiente de desglosar
 
 Las tareas de Fase 3+ (campañas, tracking, automatizaciones) se darán de alta en este
-ledger conforme se planifiquen, con ids a partir de TASK-0045, siguiendo el protocolo
+ledger conforme se planifiquen, con ids a partir de TASK-0046, siguiendo el protocolo
 de arriba. El detalle narrativo de cada fase vive en ROADMAP.md.

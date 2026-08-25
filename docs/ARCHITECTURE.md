@@ -43,7 +43,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 | Carpeta             | Contenido                                                               | Estado       |
 | ------------------- | ----------------------------------------------------------------------- | ------------ |
 | `apps/api`          | NestJS 11, Express, módulo health (`GET /health`), CORS, `API_PORT`     | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, landing estática          | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui     | ✅ Operativo |
 | `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas          | ✅ Operativo |
 | `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                | ✅ Operativo |
 | `packages/database` | Prisma; modelos base + migración inicial (TASK-0016), pendiente aplicar | 🔧 Fase 1    |
