@@ -49,10 +49,14 @@ sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 
 **Objetivo:** cada organización gestiona listas y suscriptores.
 
-| Área     | Tareas                                                                                              | Ids                  |
-| -------- | --------------------------------------------------------------------------------------------------- | -------------------- |
-| Backend  | Modelos Audience/Subscriber; endpoints CRUD; importación CSV; validación y estados                  | TASK-0022, TASK-0023 |
-| Frontend | Listado/detalle de audiencias; alta de suscriptores; filtros; indicadores de estado; shadcn/ui base | TASK-0024, TASK-0025 |
+| Área     | Tareas                                                                                                            | Ids                                        |
+| -------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Backend  | Modelos Audience/Subscriber; endpoints CRUD; importación CSV; validación y estados; ciclo de opt-in; segmentación | TASK-0022, TASK-0023, TASK-0055, TASK-0057 |
+| Frontend | Listado/detalle de audiencias; alta de suscriptores; filtros; indicadores de estado; shadcn/ui base               | TASK-0024, TASK-0025                       |
+
+> TASK-0055 (opt-in simple/doble) y TASK-0057 (segmentación real) afectan el diseño
+> de TASK-0022/TASK-0024 directamente: decidirlas antes de implementar el CRUD evita
+> rediseñar el modelo después. Ver auditoría comparativa 2026-08-25 en ISSUES.md.
 
 ---
 
@@ -60,8 +64,20 @@ sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 
 Fase 3 (campañas one-shot + motor de envío con BullMQ), Fase 4 (tracking y
 unsubscribe), Fase 5 (automatizaciones B2C), Fase 6 (pulido self-hosted) se
-desglosarán en TASKs (a partir de TASK-0046) al llegar a cada fase, siguiendo
+desglosarán en TASKs (a partir de TASK-0062) al llegar a cada fase, siguiendo
 el protocolo de ISSUES.md.
+
+La auditoría comparativa de 2026-08-25 (ISSUES.md) ya adelantó algunos hallazgos
+de qué necesita cada fase, comparado con Listmonk/SendPortal/Mautic:
+
+- **Fase 3** (envío): TASK-0050 (bounces/quejas), TASK-0051 (suppression list),
+  TASK-0052 (deliverability SPF/DKIM/DMARC), TASK-0056 (motor de envío real:
+  multi-SMTP, rate limiting, reintentos), TASK-0058 (capacidades de plantillas),
+  TASK-0061 (media library).
+- **Fase 4** (tracking/unsubscribe): TASK-0053 (one-click unsubscribe RFC 8058),
+  TASK-0059 (analítica de campaña).
+- **Transversal, sin fase fija**: TASK-0054 (GDPR: exportar/borrar datos del
+  subscriber), TASK-0060 (API pública + tokens).
 
 ---
 

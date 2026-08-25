@@ -83,8 +83,40 @@ abandonando la identidad "forja"), se ejecutó en la misma sesión.
 | --------- | -------------------------------------------------------------------- | ----------- | ------ | ---------- | ---------------------------------------------------------------------- |
 | TASK-0045 | Rediseño visual completo: paleta clara, Inter, sin identidad "forja" | Agente      | Hecha  | 2026-08-25 | Toca landing/auth/dashboard/páginas de sistema; copy también reescrito |
 
+## Auditoría comparativa 2026-08-25 (vs. Listmonk / SendPortal / Mautic)
+
+Esteban pidió comparar MailForge contra proyectos reales de GitHub del mismo sector
+(email marketing self-hosted) y auditar cumplimiento de reglas/invariantes tras las
+últimas sesiones. Referencias usadas: **Listmonk** (knadh/listmonk — segmentación SQL,
+colas multi-SMTP con rate limiting, bounces/quejas, analítica, plantillas con editor
+visual, API transaccional, SSO+RBAC), **SendPortal** (mettle/sendportal — multi-tenant
+explícito, integraciones SES/Postmark/Sendgrid/Mailgun/Mailjet), **Mautic**
+(automatización multi-canal). TASK-0046 a TASK-0049 son correcciones de documentación
+que salieron de la re-auditoría de reglas y se cerraron en la misma sesión; TASK-0050
+en adelante son las capacidades que estas herramientas tienen y MailForge todavía no
+tiene diseñadas, priorizadas para cuando toque cada fase.
+
+| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                               |
+| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | -------------------------------------------------------------------------- |
+| TASK-0046 | Documentar Helmet + rate limiting global en ARCHITECTURE.md            | Agente      | Hecha     | 2026-08-25 | TASK-0026 los construyó pero no se documentaron                            |
+| TASK-0047 | Añadir updatedAt de OrganizationMember a DATA_MODEL.md                 | Agente      | Hecha     | 2026-08-25 | El campo existe desde TASK-0016, el doc no lo listaba                      |
+| TASK-0048 | Traducir "Dashboard" a "Panel" en nav y &lt;title&gt;                  | Agente      | Hecha     | 2026-08-25 | RULE-011: única palabra en inglés mezclada con el resto del copy           |
+| TASK-0049 | Quitar tw-animate-css sin uso real                                     | Agente      | Hecha     | 2026-08-25 | RULE-010: importado en TASK-0045, ninguna clase que aporta se usa          |
+| TASK-0050 | Ingestión de bounces/quejas (webhook Postal/SES → EmailLog/Subscriber) | Esteban     | Pendiente | —          | Sin esto, bounced/complained son valores de enum que nadie activa nunca    |
+| TASK-0051 | Suppression list (global vs. por audiencia)                            | Esteban     | Pendiente | —          | Depende de TASK-0050 y TASK-0022; evita reenviar a quien ya rebotó         |
+| TASK-0052 | Guía de deliverability SPF/DKIM/DMARC antes de producción con Postal   | Esteban     | Pendiente | —          | Postal ni siquiera está en docker-compose.yml hoy                          |
+| TASK-0053 | Cumplimiento one-click unsubscribe (List-Unsubscribe, RFC 8058)        | Esteban     | Pendiente | —          | Requisito de facto de Gmail/Yahoo para remitentes masivos desde 2024       |
+| TASK-0054 | GDPR: exportar y borrar datos de un subscriber a petición              | Esteban     | Pendiente | —          | Distinto de TASK-0035 (retención interna, no derechos del titular)         |
+| TASK-0055 | Ciclo de vida de opt-in simple/doble (pending/confirmed + token)       | Esteban     | Pendiente | —          | Afecta directamente el diseño de TASK-0022; decidir antes de implementarla |
+| TASK-0056 | Motor de envío: multi-SMTP, rate limiting, reintentos/backoff          | Esteban     | Pendiente | —          | Hoy es una frase de justificación de BullMQ sin ningún número ni algoritmo |
+| TASK-0057 | Segmentación real: entidad Segment + query builder                     | Esteban     | Pendiente | —          | Afecta el diseño de TASK-0024; "filtros" hoy es una palabra suelta         |
+| TASK-0058 | Roadmap de capacidades de plantillas (condicionales, loops, editor)    | Esteban     | Pendiente | —          | Decidir si se apunta a paridad con Listmonk aquí; distinto de TASK-0044    |
+| TASK-0059 | Analítica de campaña (agregados de apertura/clic, top links)           | Esteban     | Pendiente | —          | Hoy solo se capturarían eventos crudos, sin capa de reporte diseñada       |
+| TASK-0060 | API pública + tokens de API para integraciones externas                | Esteban     | Pendiente | —          | Sin esto no se puede usar como backend transaccional desde otros sistemas  |
+| TASK-0061 | Media library / almacenamiento de assets para campañas                 | Esteban     | Pendiente | —          | Sin storage de imágenes, cualquier editor de plantillas no tiene de dónde  |
+
 ## Fase 3 y siguientes — Pendiente de desglosar
 
 Las tareas de Fase 3+ (campañas, tracking, automatizaciones) se darán de alta en este
-ledger conforme se planifiquen, con ids a partir de TASK-0046, siguiendo el protocolo
+ledger conforme se planifiquen, con ids a partir de TASK-0062, siguiendo el protocolo
 de arriba. El detalle narrativo de cada fase vive en ROADMAP.md.
