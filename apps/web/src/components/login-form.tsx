@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { APP_ROUTES, type AuthError } from '@mailforge/shared';
-import { AuthButton, AuthField, FormError } from '@/components/auth-field';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/form-field';
 import { getAuthStore } from '@/lib/auth';
 import { useAuthSubmit } from '@/lib/auth/use-auth-submit';
 
@@ -37,19 +39,21 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <FormError message={formError} />
-      <AuthField label="Email" name="email" type="email" autoComplete="email" required />
-      <AuthField
+      {formError ? <Alert>{formError}</Alert> : null}
+      <FormField label="Email" name="email" type="email" autoComplete="email" required />
+      <FormField
         label="Contraseña"
         name="password"
         type="password"
         autoComplete="current-password"
         required
       />
-      <AuthButton busy={busy}>Entrar</AuthButton>
-      <p className="mt-2 text-center text-xs text-ceniza">
+      <Button type="submit" busy={busy} className="mt-1 w-full">
+        {busy ? 'Entrando…' : 'Entrar'}
+      </Button>
+      <p className="mt-1 text-center text-sm text-muted-foreground">
         ¿Sin cuenta?{' '}
-        <a href={APP_ROUTES.register} className="text-brasa hover:text-calor">
+        <a href={APP_ROUTES.register} className="font-medium text-primary hover:underline">
           Crea una
         </a>
       </p>

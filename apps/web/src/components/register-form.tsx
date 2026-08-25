@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { APP_ROUTES, type AuthError } from '@mailforge/shared';
-import { AuthButton, AuthField, FormError } from '@/components/auth-field';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/form-field';
 import { getAuthStore } from '@/lib/auth';
 import { useAuthSubmit } from '@/lib/auth/use-auth-submit';
 
@@ -45,9 +47,9 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      <FormError message={formError} />
-      <AuthField label="Nombre" name="name" type="text" autoComplete="name" required />
-      <AuthField
+      {formError ? <Alert>{formError}</Alert> : null}
+      <FormField label="Nombre" name="name" type="text" autoComplete="name" required />
+      <FormField
         label="Email"
         name="email"
         type="email"
@@ -55,7 +57,7 @@ export function RegisterForm() {
         required
         error={fieldErrors.email}
       />
-      <AuthField
+      <FormField
         label="Contraseña"
         name="password"
         type="password"
@@ -64,10 +66,12 @@ export function RegisterForm() {
         minLength={8}
         error={fieldErrors.password}
       />
-      <AuthButton busy={busy}>Crear cuenta</AuthButton>
-      <p className="mt-2 text-center text-xs text-ceniza">
+      <Button type="submit" busy={busy} className="mt-1 w-full">
+        {busy ? 'Creando cuenta…' : 'Crear cuenta'}
+      </Button>
+      <p className="mt-1 text-center text-sm text-muted-foreground">
         ¿Ya tienes cuenta?{' '}
-        <a href={APP_ROUTES.login} className="text-brasa hover:text-calor">
+        <a href={APP_ROUTES.login} className="font-medium text-primary hover:underline">
           Entra
         </a>
       </p>

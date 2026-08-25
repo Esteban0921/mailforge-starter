@@ -12,13 +12,15 @@ test.describe('landing', () => {
 
     const hero = page.getByTestId('hero-title');
     await expect(hero).toBeVisible();
-    await expect(hero).toContainText('Hello MailForge');
+    await expect(hero).toContainText('email marketing');
 
-    await expect(page.getByText('estado del taller')).toBeVisible();
-    await expect(page.getByText('forjado por Esteban y Joseph', { exact: false })).toBeVisible();
+    await expect(page.getByText('Estado del sistema')).toBeVisible();
+    await expect(
+      page.getByText('Desarrollado por Esteban y Joseph', { exact: false }),
+    ).toBeVisible();
   });
 
-  test('shows the honest workshop status readout', async ({ page }) => {
+  test('shows the honest system status readout', async ({ page }) => {
     await page.goto('/');
 
     const status = page.getByRole('list').filter({ hasText: 'api' });

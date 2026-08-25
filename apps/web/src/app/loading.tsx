@@ -1,7 +1,10 @@
+import { Loader2 } from 'lucide-react';
+
 export default function Loading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-hierro text-ceniza">
-      <p className="font-mono text-xs tracking-[0.25em] uppercase">Cargando…</p>
+    <main className="flex min-h-screen items-center justify-center bg-background">
+      <Loader2 className="size-5 animate-spin text-muted-foreground" aria-hidden="true" />
+      <span className="sr-only">Cargando…</span>
     </main>
   );
 }
