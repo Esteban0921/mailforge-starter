@@ -64,6 +64,27 @@ export interface AuthStore {
   login(input: LoginInput): Promise<Result<AuthSession, AuthError>>;
   logout(): Promise<void>;
   getSession(): AuthSession | null;
+  /** Updates the signed-in user's display name. */
+  updateProfile(name: string): Promise<Result<AuthSession, AuthError>>;
+  /** Changes the signed-in user's password, re-checking the current one first. */
+  updatePassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<Result<AuthSession, AuthError>>;
+}
+
+/**
+ * Fired on `window` whenever the session is written or cleared. The native
+ * `storage` event only reaches OTHER tabs, never the one that made the
+ * change — components in this tab (e.g. the sidebar's user name) need this
+ * to notice a profile update made by a sibling component.
+ */
+export const SESSION_CHANGE_EVENT = 'mailforge:session-change';
+
+function notifySessionChange(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
+  }
 }
 
 export function createAuthStore(storage: StorageLike): AuthStore {
@@ -72,6 +93,17 @@ export function createAuthStore(storage: StorageLike): AuthStore {
       storage.removeItem(SESSION_KEY);
     } else {
       storage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+    notifySessionChange();
+  }
+
+  function readSession(): AuthSession | null {
+    const raw = storage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as AuthSession;
+    } catch {
+      return null;
     }
   }
 
@@ -129,15 +161,60 @@ export function createAuthStore(storage: StorageLike): AuthStore {
       persistSession(null);
     },
 
-    getSession() {
-      const raw = storage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      try {
-        return JSON.parse(raw) as AuthSession;
-      } catch {
-        return null;
+    async updateProfile(name) {
+      const session = readSession();
+      const trimmed = name.trim();
+      if (session === null || trimmed.length === 0) {
+        return err('invalid_input');
       }
+
+      await sleep(MOCK_LATENCY_MS);
+
+      const users = readJson<StoredUser>(storage, USERS_KEY);
+      const index = users.findIndex((u) => u.id === session.user.id);
+      if (index === -1) {
+        return err('invalid_input');
+      }
+
+      const updated: StoredUser = { ...users[index], name: trimmed };
+      users[index] = updated;
+      storage.setItem(USERS_KEY, JSON.stringify(users));
+
+      const newSession = toSession(updated);
+      persistSession(newSession);
+      return ok(newSession);
     },
+
+    async updatePassword(currentPassword, newPassword) {
+      const session = readSession();
+      if (session === null) {
+        return err('invalid_input');
+      }
+
+      await sleep(MOCK_LATENCY_MS);
+
+      const users = readJson<StoredUser>(storage, USERS_KEY);
+      const index = users.findIndex((u) => u.id === session.user.id);
+      if (index === -1) {
+        return err('invalid_input');
+      }
+      if (users[index].secret !== mockSecret(currentPassword)) {
+        return err('invalid_credentials');
+      }
+      if (!validatePassword(newPassword)) {
+        return err('weak_password');
+      }
+
+      const updated: StoredUser = { ...users[index], secret: mockSecret(newPassword) };
+      users[index] = updated;
+      storage.setItem(USERS_KEY, JSON.stringify(users));
+
+      const newSession = toSession(updated);
+      persistSession(newSession);
+      return ok(newSession);
+    },
+
+    getSession: readSession,
   };
 }
 

@@ -93,4 +93,52 @@ test.describe('auth flow (mock)', () => {
     await expect(page.getByLabel('Email')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByText('ya tiene cuenta')).toBeVisible();
   });
+
+  test('profile: rename updates the sidebar live, and the new password survives a relogin', async ({
+    page,
+  }) => {
+    await fillRegister(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.getByTestId('dashboard-user').click();
+    await expect(page).toHaveURL(/\/dashboard\/profile$/);
+
+    await page.getByLabel('Nombre').fill('Ana Renombrada');
+    await page.getByRole('button', { name: 'Guardar cambios' }).click();
+    await expect(page.getByText('Perfil actualizado.')).toBeVisible();
+    // No page reload happened — this proves the sidebar reacts to the
+    // session-change event instead of going stale until a hard refresh.
+    await expect(page.getByTestId('dashboard-user')).toHaveText('Ana Renombrada');
+
+    await page.getByLabel('Contraseña actual').fill(PASSWORD);
+    await page.getByLabel('Contraseña nueva').fill('otra-contraseña-nueva');
+    await page.getByRole('button', { name: 'Cambiar contraseña' }).click();
+    await expect(page.getByText('Contraseña actualizada.')).toBeVisible();
+
+    await page.getByTestId('logout-button').click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    await page.getByLabel('Email').fill(EMAIL);
+    await page.getByLabel('Contraseña').fill('otra-contraseña-nueva');
+    await page.getByRole('button', { name: 'Entrar' }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByTestId('dashboard-user')).toHaveText('Ana Renombrada');
+  });
+
+  test('mobile: the dashboard nav opens as a drawer and closes on backdrop click', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await fillRegister(page);
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    const nav = page.getByTestId('dashboard-nav');
+    await expect(nav).not.toBeInViewport();
+
+    await page.getByRole('button', { name: 'Abrir navegación' }).click();
+    await expect(nav).toBeInViewport();
+
+    await page.getByTestId('mobile-nav-backdrop').click();
+    await expect(nav).not.toBeInViewport();
+  });
 });

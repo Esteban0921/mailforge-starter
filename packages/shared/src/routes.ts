@@ -16,6 +16,7 @@ export const APP_ROUTES = {
   login: '/login',
   register: '/register',
   dashboard: '/dashboard',
+  profile: '/dashboard/profile',
 } as const;
 
 export type AppRoute = (typeof APP_ROUTES)[keyof typeof APP_ROUTES];
