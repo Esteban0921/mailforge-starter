@@ -75,8 +75,37 @@ Evolución futura posible a schema-per-tenant si hiciera falta.
    del Subscriber
 
 La pieza ya construida para esto es renderTemplate() en packages/email:
-interpolación {{variable}} con escape HTML por defecto y variante estricta que
-falla antes de enviar si falta una variable.
+interpolación {{variable}} (plana y dot-path) con escape HTML por defecto y
+variante estricta que falla antes de enviar si falta una variable.
+
+### Diseño concreto del motor de envío (decidido, TASK-0056)
+
+Hasta ahora "BullMQ" era una palabra suelta sin números. Punto de partida:
+
+- **Rate limiting**: límite configurable por organización (`sendsPerSecond`,
+  default conservador — p. ej. 10/s — mucho más bajo que lo que Mailpit/la
+  mayoría de proveedores toleran, porque el límite real lo marca la
+  reputación del dominio remitente, no la capacidad técnica de la cola).
+  BullMQ soporta esto nativo vía `limiter` por cola.
+- **Multi-SMTP**: patrón adapter (`EmailProvider` interface) con Nodemailer
+  como implementación de desarrollo (Mailpit) y una implementación por
+  proveedor de producción (Postal u otro SMTP) seleccionada por
+  configuración de organización, no hardcodeada — así una organización con
+  su propio dominio/SMTP no compite por reputación con las demás.
+- **Reintentos**: backoff exponencial, 3 intentos, base 30s (BullMQ:
+  `attempts: 3, backoff: { type: 'exponential', delay: 30_000 }`). Un fallo
+  tras 3 intentos marca `EmailLog.status = 'failed'` con `errorMessage`, no
+  reintento infinito.
+- **Bounces/quejas** (TASK-0050) alimentan el `Subscriber.status` de vuelta
+  vía webhook del proveedor, no polling — el worker de envío y el receptor
+  de webhooks son procesos distintos.
+
+### Deliverability antes de producción (TASK-0052)
+
+Ver [SETUP.md](./SETUP.md#6-deliverability-antes-de-producción) para la guía
+operativa de SPF/DKIM/DMARC — sin esto, el primer envío masivo real desde un
+dominio nuevo cae en spam o quema la reputación del dominio antes de que
+importe cualquier otra decisión de diseño de este documento.
 
 ---
 

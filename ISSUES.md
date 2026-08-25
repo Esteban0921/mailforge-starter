@@ -61,8 +61,8 @@ TASK-0031 en adelante son los hallazgos que quedan pendientes de priorizar.
 | TASK-0031 | Backend: verificación de email de usuario (campo + flujo)              | Esteban     | Pendiente | —          | Depende de decidir SMTP en Fase 1 vs Fase 3; Mailpit ya disponible                                    |
 | TASK-0032 | Backend: recuperación de contraseña (forgot/reset)                     | Esteban     | Pendiente | —          | No está en el alcance actual de TASK-0018, falta decidir si entra ahí                                 |
 | TASK-0033 | Backend: invitaciones a Organization (modelo + flujo + token)          | Esteban     | Pendiente | —          | Fase 1, relacionado con TASK-0019                                                                     |
-| TASK-0034 | Backend: email case-insensitive a nivel de esquema (citext / índice)   | Esteban     | Pendiente | —          | Hoy solo lo garantiza normalizeEmail() en aplicación, no la BD                                        |
-| TASK-0035 | Backend: estrategia de soft-delete/retención de datos de negocio       | Esteban     | Pendiente | —          | Decidir antes de que TASK-0022 empiece a acumular suscriptores                                        |
+| TASK-0034 | Backend: email case-insensitive a nivel de esquema (citext / índice)   | Agente      | Hecha     | 2026-08-25 | Decidido: CHECK (email = lower(email)) en migración, no citext. Ver DATA_MODEL.md                     |
+| TASK-0035 | Backend: estrategia de soft-delete/retención de datos de negocio       | Agente      | Hecha     | 2026-08-25 | Decidido: deletedAt anulable + filtro en queries. Ver DATA_MODEL.md                                   |
 | TASK-0036 | Frontend: sistema de toasts/notificaciones + loaders globales          | Agente      | Hecha     | 2026-08-25 | ToastProvider/useToast; usado en logout (TASK-0037 lo reusa)                                          |
 | TASK-0037 | Frontend: página de perfil de usuario (nombre, contraseña)             | Agente      | Hecha     | 2026-08-25 | Bug real corregido: sidebar no se refrescaba tras editar (SESSION_CHANGE_EVENT)                       |
 | TASK-0038 | Frontend: página de ajustes de organización (nombre, branding)         | Joseph      | Pendiente | —          | Diferida: no existe ningún concepto de "organización actual" en el frontend aún, depende de TASK-0021 |
@@ -96,24 +96,24 @@ que salieron de la re-auditoría de reglas y se cerraron en la misma sesión; TA
 en adelante son las capacidades que estas herramientas tienen y MailForge todavía no
 tiene diseñadas, priorizadas para cuando toque cada fase.
 
-| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                               |
-| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | -------------------------------------------------------------------------- |
-| TASK-0046 | Documentar Helmet + rate limiting global en ARCHITECTURE.md            | Agente      | Hecha     | 2026-08-25 | TASK-0026 los construyó pero no se documentaron                            |
-| TASK-0047 | Añadir updatedAt de OrganizationMember a DATA_MODEL.md                 | Agente      | Hecha     | 2026-08-25 | El campo existe desde TASK-0016, el doc no lo listaba                      |
-| TASK-0048 | Traducir "Dashboard" a "Panel" en nav y &lt;title&gt;                  | Agente      | Hecha     | 2026-08-25 | RULE-011: única palabra en inglés mezclada con el resto del copy           |
-| TASK-0049 | Quitar tw-animate-css sin uso real                                     | Agente      | Hecha     | 2026-08-25 | RULE-010: importado en TASK-0045, ninguna clase que aporta se usa          |
-| TASK-0050 | Ingestión de bounces/quejas (webhook Postal/SES → EmailLog/Subscriber) | Esteban     | Pendiente | —          | Sin esto, bounced/complained son valores de enum que nadie activa nunca    |
-| TASK-0051 | Suppression list (global vs. por audiencia)                            | Esteban     | Pendiente | —          | Depende de TASK-0050 y TASK-0022; evita reenviar a quien ya rebotó         |
-| TASK-0052 | Guía de deliverability SPF/DKIM/DMARC antes de producción con Postal   | Esteban     | Pendiente | —          | Postal ni siquiera está en docker-compose.yml hoy                          |
-| TASK-0053 | Cumplimiento one-click unsubscribe (List-Unsubscribe, RFC 8058)        | Esteban     | Pendiente | —          | Requisito de facto de Gmail/Yahoo para remitentes masivos desde 2024       |
-| TASK-0054 | GDPR: exportar y borrar datos de un subscriber a petición              | Esteban     | Pendiente | —          | Distinto de TASK-0035 (retención interna, no derechos del titular)         |
-| TASK-0055 | Ciclo de vida de opt-in simple/doble (pending/confirmed + token)       | Esteban     | Pendiente | —          | Afecta directamente el diseño de TASK-0022; decidir antes de implementarla |
-| TASK-0056 | Motor de envío: multi-SMTP, rate limiting, reintentos/backoff          | Esteban     | Pendiente | —          | Hoy es una frase de justificación de BullMQ sin ningún número ni algoritmo |
-| TASK-0057 | Segmentación real: entidad Segment + query builder                     | Esteban     | Pendiente | —          | Afecta el diseño de TASK-0024; "filtros" hoy es una palabra suelta         |
-| TASK-0058 | Roadmap de capacidades de plantillas (condicionales, loops, editor)    | Esteban     | Pendiente | —          | Decidir si se apunta a paridad con Listmonk aquí; distinto de TASK-0044    |
-| TASK-0059 | Analítica de campaña (agregados de apertura/clic, top links)           | Esteban     | Pendiente | —          | Hoy solo se capturarían eventos crudos, sin capa de reporte diseñada       |
-| TASK-0060 | API pública + tokens de API para integraciones externas                | Esteban     | Pendiente | —          | Sin esto no se puede usar como backend transaccional desde otros sistemas  |
-| TASK-0061 | Media library / almacenamiento de assets para campañas                 | Esteban     | Pendiente | —          | Sin storage de imágenes, cualquier editor de plantillas no tiene de dónde  |
+| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                                                          |
+| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| TASK-0046 | Documentar Helmet + rate limiting global en ARCHITECTURE.md            | Agente      | Hecha     | 2026-08-25 | TASK-0026 los construyó pero no se documentaron                                                       |
+| TASK-0047 | Añadir updatedAt de OrganizationMember a DATA_MODEL.md                 | Agente      | Hecha     | 2026-08-25 | El campo existe desde TASK-0016, el doc no lo listaba                                                 |
+| TASK-0048 | Traducir "Dashboard" a "Panel" en nav y &lt;title&gt;                  | Agente      | Hecha     | 2026-08-25 | RULE-011: única palabra en inglés mezclada con el resto del copy                                      |
+| TASK-0049 | Quitar tw-animate-css sin uso real                                     | Agente      | Hecha     | 2026-08-25 | RULE-010: importado en TASK-0045, ninguna clase que aporta se usa                                     |
+| TASK-0050 | Ingestión de bounces/quejas (webhook Postal/SES → EmailLog/Subscriber) | Esteban     | Pendiente | —          | Sin esto, bounced/complained son valores de enum que nadie activa nunca                               |
+| TASK-0051 | Suppression list (global vs. por audiencia)                            | Esteban     | Pendiente | —          | Depende de TASK-0050 y TASK-0022; evita reenviar a quien ya rebotó                                    |
+| TASK-0052 | Guía de deliverability SPF/DKIM/DMARC antes de producción con Postal   | Agente      | Hecha     | 2026-08-25 | Guía operativa en SETUP.md §6; falta el servicio Postal en docker-compose.yml                         |
+| TASK-0053 | Cumplimiento one-click unsubscribe (List-Unsubscribe, RFC 8058)        | Esteban     | Pendiente | —          | Requisito de facto de Gmail/Yahoo para remitentes masivos desde 2024                                  |
+| TASK-0054 | GDPR: exportar y borrar datos de un subscriber a petición              | Esteban     | Pendiente | —          | Distinto de TASK-0035 (retención interna, no derechos del titular)                                    |
+| TASK-0055 | Ciclo de vida de opt-in simple/doble (pending/confirmed + token)       | Agente      | Hecha     | 2026-08-25 | Decidido y documentado en DATA_MODEL.md; implementación real sigue en TASK-0022                       |
+| TASK-0056 | Motor de envío: multi-SMTP, rate limiting, reintentos/backoff          | Agente      | Hecha     | 2026-08-25 | Diseño con números concretos en ARCHITECTURE.md; implementación en Fase 3                             |
+| TASK-0057 | Segmentación real: entidad Segment + query builder                     | Agente      | Hecha     | 2026-08-25 | DSL de reglas (no SQL libre) documentado en DATA_MODEL.md                                             |
+| TASK-0058 | Roadmap de capacidades de plantillas (condicionales, loops, editor)    | Agente      | Hecha     | 2026-08-25 | Decidido: sin ampliar por ahora, sin caso de uso real esperando. Ver DATA_MODEL.md                    |
+| TASK-0059 | Analítica de campaña (agregados de apertura/clic, top links)           | Esteban     | Pendiente | —          | Hoy solo se capturarían eventos crudos, sin capa de reporte diseñada                                  |
+| TASK-0060 | API pública + tokens de API para integraciones externas                | Agente      | Hecha     | 2026-08-25 | Diseño de ApiToken + convención de auth en DATA_MODEL.md; implementación bloqueada por TASK-0018/0019 |
+| TASK-0061 | Media library / almacenamiento de assets para campañas                 | Esteban     | Pendiente | —          | Sin storage de imágenes, cualquier editor de plantillas no tiene de dónde                             |
 
 ## Fase 3 y siguientes — Pendiente de desglosar
 

@@ -72,6 +72,41 @@ pnpm db:migrate        # prisma migrate dev
 pnpm db:studio         # prisma studio
 ```
 
+## 6. Deliverability antes de producción
+
+Esto no aplica a desarrollo local (Mailpit no comprueba nada de esto), pero
+**bloquea cualquier envío real** desde el momento en que MailForge hable con
+Postal (o cualquier SMTP de producción) en vez de con Mailpit. Sin lo de
+abajo, el primer envío masivo cae en spam o quema la reputación del dominio
+antes de que importe ninguna otra decisión de producto — es infraestructura
+de correo, no una opción de configuración a posponer (TASK-0052).
+
+1. **SPF** — registro TXT en el dominio remitente autorizando qué servidores
+   pueden enviar en su nombre: `v=spf1 ip4:<ip-del-servidor-postal> -all`.
+   Un solo registro SPF por dominio; si ya existe uno (p. ej. de Google
+   Workspace), se añade el mecanismo, no se duplica el registro.
+2. **DKIM** — Postal genera su propio par de claves por dominio remitente
+   (`postal dkim generate` en su CLI); la clave pública se publica como TXT
+   en `<selector>._domainkey.<dominio>`. Cada dominio que una organización
+   quiera usar como remitente necesita su propio DKIM.
+3. **DMARC** — registro TXT en `_dmarc.<dominio>` declarando qué hacer si
+   SPF/DKIM fallan. Empezar en modo observación,
+   `v=DMARC1; p=none; rua=mailto:<direccion-de-reportes>`, y subir a
+   `p=quarantine` (y eventualmente `p=reject`) solo después de confirmar en
+   los reportes que el propio envío legítimo pasa SPF/DKIM de forma
+   consistente — pasar a `p=reject` antes de verificar eso puede bloquear
+   correo propio.
+4. **Verificación**: antes de dar por buena la configuración de un dominio,
+   un envío de prueba a [mail-tester.com](https://www.mail-tester.com) (o
+   equivalente) confirma que SPF/DKIM/DMARC resuelven correctamente end to
+   end, no solo que los registros DNS existen.
+
+Esto es responsabilidad de quien despliega (por dominio, por organización),
+no algo que MailForge pueda automatizar completamente — pero si Fase 3
+demuestra que hace falta, un asistente en la UI que verifique estos tres
+registros por dominio antes de permitir el primer envío es candidato natural
+a TASK propia.
+
 ---
 
 ## Comandos útiles
