@@ -51,27 +51,27 @@ dependencias, packages/shared, packages/email, CI) contra las reglas de AGENTS.m
 TASK-0026 a TASK-0030 son el trabajo que salió de ahí y se cerró en la misma sesión;
 TASK-0031 en adelante son los hallazgos que quedan pendientes de priorizar.
 
-| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                                   |
-| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | ------------------------------------------------------------------------------ |
-| TASK-0026 | Backend: hardening base (CORS por entorno, Helmet, rate limiting, env) | Agente      | Hecha     | 2026-08-25 | CORS_ORIGIN, helmet, @nestjs/throttler, bootstrap fail-fast, readApiPort avisa |
-| TASK-0027 | Frontend: sidebar del dashboard responsive (mobile-first)              | Agente      | Hecha     | 2026-08-25 | Bloqueante del audit: 87px útiles en 375px antes del fix                       |
-| TASK-0028 | Frontend: accesibilidad y estados reales en los formularios de auth    | Agente      | Hecha     | 2026-08-25 | Foco visible, error por campo, weak_password ya no es dead code                |
-| TASK-0029 | Frontend: páginas de sistema (404, error boundary, favicon, loading)   | Agente      | Hecha     | 2026-08-25 | No existía ninguna antes del audit                                             |
-| TASK-0030 | Frontend: extraer Wordmark + hook de auth, adoptar APP_ROUTES          | Agente      | Hecha     | 2026-08-25 | APP_ROUTES era un contrato muerto desde TASK-0020                              |
-| TASK-0031 | Backend: verificación de email de usuario (campo + flujo)              | Esteban     | Pendiente | —          | Depende de decidir SMTP en Fase 1 vs Fase 3; Mailpit ya disponible             |
-| TASK-0032 | Backend: recuperación de contraseña (forgot/reset)                     | Esteban     | Pendiente | —          | No está en el alcance actual de TASK-0018, falta decidir si entra ahí          |
-| TASK-0033 | Backend: invitaciones a Organization (modelo + flujo + token)          | Esteban     | Pendiente | —          | Fase 1, relacionado con TASK-0019                                              |
-| TASK-0034 | Backend: email case-insensitive a nivel de esquema (citext / índice)   | Esteban     | Pendiente | —          | Hoy solo lo garantiza normalizeEmail() en aplicación, no la BD                 |
-| TASK-0035 | Backend: estrategia de soft-delete/retención de datos de negocio       | Esteban     | Pendiente | —          | Decidir antes de que TASK-0022 empiece a acumular suscriptores                 |
-| TASK-0036 | Frontend: sistema de toasts/notificaciones + loaders globales          | Joseph      | Pendiente | —          | Fase 2                                                                         |
-| TASK-0037 | Frontend: página de perfil de usuario (nombre, contraseña)             | Joseph      | Pendiente | —          | Fase 2                                                                         |
-| TASK-0038 | Frontend: página de ajustes de organización (nombre, branding)         | Joseph      | Pendiente | —          | Distinta del switcher de TASK-0021                                             |
-| TASK-0039 | Frontend: infraestructura de testing de componentes (Testing Library)  | Joseph      | Pendiente | —          | vitest.config usa environment:'node'; hoy no se puede testear JSX              |
-| TASK-0040 | Frontend: pase sistemático de accesibilidad (eslint-plugin-jsx-a11y)   | Joseph      | Pendiente | —          | Fase 2, más allá de los fixes puntuales de TASK-0028                           |
-| TASK-0041 | Frontend: navegación responsive completa (drawer, breadcrumbs)         | Joseph      | Pendiente | —          | TASK-0027 resolvió lo bloqueante; esto es la versión pulida                    |
-| TASK-0042 | Proceso: quitar typescript-eslint de 4 package.json sin uso propio     | Esteban     | Pendiente | —          | Solo la config raíz lo usa; RULE-010                                           |
-| TASK-0043 | Proceso: test directo de validatePassword en packages/shared           | Esteban     | Pendiente | —          | Hoy solo cubierto indirectamente vía apps/web/store.spec.ts                    |
-| TASK-0044 | Proceso: decidir soporte dot-path en variables de renderTemplate       | Esteban     | Pendiente | —          | Fase 3; el regex ya acepta puntos pero el docstring dice claves planas         |
+| ID        | Título                                                                 | Responsable | Estado    | Cierre     | Refs / Notas                                                                                          |
+| --------- | ---------------------------------------------------------------------- | ----------- | --------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| TASK-0026 | Backend: hardening base (CORS por entorno, Helmet, rate limiting, env) | Agente      | Hecha     | 2026-08-25 | CORS_ORIGIN, helmet, @nestjs/throttler, bootstrap fail-fast, readApiPort avisa                        |
+| TASK-0027 | Frontend: sidebar del dashboard responsive (mobile-first)              | Agente      | Hecha     | 2026-08-25 | Bloqueante del audit: 87px útiles en 375px antes del fix                                              |
+| TASK-0028 | Frontend: accesibilidad y estados reales en los formularios de auth    | Agente      | Hecha     | 2026-08-25 | Foco visible, error por campo, weak_password ya no es dead code                                       |
+| TASK-0029 | Frontend: páginas de sistema (404, error boundary, favicon, loading)   | Agente      | Hecha     | 2026-08-25 | No existía ninguna antes del audit                                                                    |
+| TASK-0030 | Frontend: extraer Wordmark + hook de auth, adoptar APP_ROUTES          | Agente      | Hecha     | 2026-08-25 | APP_ROUTES era un contrato muerto desde TASK-0020                                                     |
+| TASK-0031 | Backend: verificación de email de usuario (campo + flujo)              | Esteban     | Pendiente | —          | Depende de decidir SMTP en Fase 1 vs Fase 3; Mailpit ya disponible                                    |
+| TASK-0032 | Backend: recuperación de contraseña (forgot/reset)                     | Esteban     | Pendiente | —          | No está en el alcance actual de TASK-0018, falta decidir si entra ahí                                 |
+| TASK-0033 | Backend: invitaciones a Organization (modelo + flujo + token)          | Esteban     | Pendiente | —          | Fase 1, relacionado con TASK-0019                                                                     |
+| TASK-0034 | Backend: email case-insensitive a nivel de esquema (citext / índice)   | Esteban     | Pendiente | —          | Hoy solo lo garantiza normalizeEmail() en aplicación, no la BD                                        |
+| TASK-0035 | Backend: estrategia de soft-delete/retención de datos de negocio       | Esteban     | Pendiente | —          | Decidir antes de que TASK-0022 empiece a acumular suscriptores                                        |
+| TASK-0036 | Frontend: sistema de toasts/notificaciones + loaders globales          | Agente      | Hecha     | 2026-08-25 | ToastProvider/useToast; usado en logout (TASK-0037 lo reusa)                                          |
+| TASK-0037 | Frontend: página de perfil de usuario (nombre, contraseña)             | Agente      | Hecha     | 2026-08-25 | Bug real corregido: sidebar no se refrescaba tras editar (SESSION_CHANGE_EVENT)                       |
+| TASK-0038 | Frontend: página de ajustes de organización (nombre, branding)         | Joseph      | Pendiente | —          | Diferida: no existe ningún concepto de "organización actual" en el frontend aún, depende de TASK-0021 |
+| TASK-0039 | Frontend: infraestructura de testing de componentes (Testing Library)  | Agente      | Hecha     | 2026-08-25 | happy-dom + Testing Library; verificado con test real de interacción                                  |
+| TASK-0040 | Frontend: pase sistemático de accesibilidad (eslint-plugin-jsx-a11y)   | Agente      | Hecha     | 2026-08-25 | 3 hallazgos reales corregidos (Label/CardTitle/LinkButton con props ocultas)                          |
+| TASK-0041 | Frontend: navegación responsive completa (drawer, breadcrumbs)         | Agente      | Hecha     | 2026-08-25 | Drawer real; breadcrumbs diferidos (solo hay una ruta real hoy, ver notas)                            |
+| TASK-0042 | Proceso: quitar typescript-eslint de 4 package.json sin uso propio     | Agente      | Hecha     | 2026-08-25 | Verificado: eslint sigue resolviendo vía hoisting desde la raíz                                       |
+| TASK-0043 | Proceso: test directo de validatePassword en packages/shared           | Agente      | Hecha     | 2026-08-25 | packages/shared/src/auth.spec.ts                                                                      |
+| TASK-0044 | Proceso: decidir soporte dot-path en variables de renderTemplate       | Agente      | Hecha     | 2026-08-25 | Dot-path real implementado (objetos anidados, no arrays); ver render-template.ts                      |
 
 ## Rediseño visual 2026-08-25
 
