@@ -44,6 +44,38 @@ describe('renderTemplate', () => {
   it('renders an empty string for null/undefined values that DO exist', () => {
     expect(renderTemplate('A{{x}}B', { data: { x: null, y: undefined } })).toBe('AB');
   });
+
+  it('traverses a dotted name into nested plain objects', () => {
+    const out = renderTemplate('{{customFields.empresa}}', {
+      data: { customFields: { empresa: 'Acme' } },
+    });
+    expect(out).toBe('Acme');
+  });
+
+  it('traverses more than one level deep', () => {
+    const out = renderTemplate('{{a.b.c}}', { data: { a: { b: { c: 'ok' } } } });
+    expect(out).toBe('ok');
+  });
+
+  it('treats a dotted name as unknown when an intermediate segment is missing', () => {
+    const onUnknownVariable = vi.fn();
+    const out = renderTemplate('{{customFields.empresa}}', {
+      data: { customFields: {} },
+      onUnknownVariable,
+    });
+    expect(out).toBe('');
+    expect(onUnknownVariable).toHaveBeenCalledExactlyOnceWith('customFields.empresa');
+  });
+
+  it('does not index into arrays via a dotted name', () => {
+    const onUnknownVariable = vi.fn();
+    const out = renderTemplate('{{items.0}}', {
+      data: { items: ['first'] },
+      onUnknownVariable,
+    });
+    expect(out).toBe('');
+    expect(onUnknownVariable).toHaveBeenCalledExactlyOnceWith('items.0');
+  });
 });
 
 describe('renderTemplateStrict', () => {
@@ -59,6 +91,16 @@ describe('renderTemplateStrict', () => {
 
   it('does not treat an unknown variable as fatal when data covers it', () => {
     expect(renderTemplateStrict('{{x}}', { x: '' })).toBe('');
+  });
+
+  it('resolves dotted names the same way as renderTemplate', () => {
+    expect(renderTemplateStrict('{{a.b}}', { a: { b: 'ok' } })).toBe('ok');
+  });
+
+  it('throws for a dotted name whose nested path is incomplete', () => {
+    expect(() => renderTemplateStrict('{{a.b}}', { a: {} })).toThrowError(
+      new MissingTemplateVariablesError(['a.b']),
+    );
   });
 });
 

@@ -2,11 +2,36 @@
  * Template rendering for campaign emails.
  *
  * Placeholders use the documented MailForge syntax: `{{variableName}}`
- * (whitespace inside the braces is tolerated). Data keys are flat —
- * nested objects are not traversed.
+ * (whitespace inside the braces is tolerated). A dotted name like
+ * `{{customFields.empresa}}` traverses plain nested objects (e.g. the
+ * JSON blob on Subscriber.customFields) — it does not index into arrays,
+ * and any missing/non-object segment along the way makes the whole
+ * placeholder "unknown", same as a flat key that isn't in `data`.
  */
 
 const TEMPLATE_VARIABLE = /\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g;
+
+/** Result of looking up a (possibly dotted) placeholder name in `data`. */
+interface VariableLookup {
+  found: boolean;
+  value: unknown;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Resolves `name` against `data`, traversing one level per `.` segment. */
+function resolveVariable(data: Record<string, unknown>, name: string): VariableLookup {
+  let current: unknown = data;
+  for (const segment of name.split('.')) {
+    if (!isPlainObject(current) || !Object.prototype.hasOwnProperty.call(current, segment)) {
+      return { found: false, value: undefined };
+    }
+    current = current[segment];
+  }
+  return { found: true, value: current };
+}
 
 /** Escapes a value for safe interpolation into an HTML document body. */
 export function escapeHtml(value: unknown): string {
@@ -50,11 +75,11 @@ export function renderTemplate(template: string, options: RenderTemplateOptions 
   const { data = {}, escapeValues = true, onUnknownVariable } = options;
 
   return template.replace(TEMPLATE_VARIABLE, (_match: string, name: string) => {
-    if (!Object.prototype.hasOwnProperty.call(data, name)) {
+    const { found, value } = resolveVariable(data, name);
+    if (!found) {
       onUnknownVariable?.(name);
       return '';
     }
-    const value = data[name];
     // A key that exists but holds null/undefined renders as empty text:
     // a missing subscriber field must never leak "null" into an email.
     if (value === null || value === undefined) {
@@ -73,7 +98,7 @@ export function renderTemplateStrict(template: string, data: Record<string, unkn
   const missing = new Set<string>();
   for (const match of template.matchAll(TEMPLATE_VARIABLE)) {
     const name = match[1];
-    if (!Object.prototype.hasOwnProperty.call(data, name)) {
+    if (!resolveVariable(data, name).found) {
       missing.add(name);
     }
   }
