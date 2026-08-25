@@ -9,7 +9,7 @@ import { Wordmark } from '@/components/wordmark';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { href: APP_ROUTES.dashboard, label: 'Dashboard', icon: LayoutDashboard, enabled: true },
+  { href: APP_ROUTES.dashboard, label: 'Panel', icon: LayoutDashboard, enabled: true },
   { href: APP_ROUTES.dashboard, label: 'Audiencias', icon: Users, enabled: false },
   { href: APP_ROUTES.dashboard, label: 'Campañas', icon: Megaphone, enabled: false },
   { href: APP_ROUTES.dashboard, label: 'Automatizaciones', icon: Zap, enabled: false },

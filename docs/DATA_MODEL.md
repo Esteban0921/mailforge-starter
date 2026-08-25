@@ -31,6 +31,7 @@ Se irá ampliando conforme avancemos en las fases.
 - userId
 - role (`owner` | `admin` | `member`)
 - createdAt
+- updatedAt
 
 > Un usuario puede pertenecer a varias organizations.
 

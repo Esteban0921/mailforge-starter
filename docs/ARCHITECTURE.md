@@ -42,7 +42,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 
 | Carpeta             | Contenido                                                               | Estado       |
 | ------------------- | ----------------------------------------------------------------------- | ------------ |
-| `apps/api`          | NestJS 11, Express, módulo health (`GET /health`), CORS, `API_PORT`     | ✅ Operativo |
+| `apps/api`          | NestJS 11, Express, health, CORS por entorno, Helmet, rate limiting     | ✅ Operativo |
 | `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui     | ✅ Operativo |
 | `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas          | ✅ Operativo |
 | `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                | ✅ Operativo |
@@ -186,8 +186,10 @@ Sistema propio simple (JWT + refresh tokens) o Better Auth; login social despué
 
 ## Seguridad desde el principio
 
-- Todas las rutas de negocio requerirán autenticacion
-- Todas las consultas filtrarán por organizationId (RULE-005)
-- Validacion de entrada con class-validator o Zod
-- Rate limiting en endpoints publicos (unsubscribe, tracking)
-- Tokens de unsubscribe firmados y con expiracion
+- ✅ Helmet (cabeceras) y rate limiting global (`@nestjs/throttler`, 120 req/min) desde TASK-0026
+- ✅ CORS restringible por entorno vía `CORS_ORIGIN` (TASK-0026)
+- ⏳ Todas las rutas de negocio requerirán autenticación
+- ⏳ Todas las consultas filtrarán por organizationId (RULE-005)
+- ⏳ Validación de entrada con class-validator o Zod
+- ⏳ Rate limiting específico en endpoints públicos (unsubscribe, tracking)
+- ⏳ Tokens de unsubscribe firmados y con expiración
