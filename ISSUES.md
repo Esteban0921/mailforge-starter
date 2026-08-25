@@ -76,5 +76,5 @@ TASK-0031 en adelante son los hallazgos que quedan pendientes de priorizar.
 ## Fase 3 y siguientes — Pendiente de desglosar
 
 Las tareas de Fase 3+ (campañas, tracking, automatizaciones) se darán de alta en este
-ledger conforme se planifiquen, con ids a partir de TASK-0026, siguiendo el protocolo
+ledger conforme se planifiquen, con ids a partir de TASK-0045, siguiendo el protocolo
 de arriba. El detalle narrativo de cada fase vive en ROADMAP.md.

@@ -60,7 +60,7 @@ sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 
 Fase 3 (campañas one-shot + motor de envío con BullMQ), Fase 4 (tracking y
 unsubscribe), Fase 5 (automatizaciones B2C), Fase 6 (pulido self-hosted) se
-desglosarán en TASKs (a partir de TASK-0026) al llegar a cada fase, siguiendo
+desglosarán en TASKs (a partir de TASK-0045) al llegar a cada fase, siguiendo
 el protocolo de ISSUES.md.
 
 ---
