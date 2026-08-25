@@ -63,6 +63,10 @@ export interface LinkButtonProps
   extends AnchorHTMLAttributes<HTMLAnchorElement>, VariantProps<typeof buttonVariants> {}
 
 /** A same-styled `<a>` for navigation — Button stays a real <button> for actions. */
-export function LinkButton({ className, variant, size, ...props }: LinkButtonProps) {
-  return <a className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+export function LinkButton({ className, variant, size, children, ...props }: LinkButtonProps) {
+  return (
+    <a className={cn(buttonVariants({ variant, size, className }))} {...props}>
+      {children}
+    </a>
+  );
 }

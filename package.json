@@ -17,6 +17,7 @@
   "devDependencies": {
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "prettier": "^3.6.0",
