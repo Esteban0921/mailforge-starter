@@ -36,6 +36,9 @@ describe('GET /health (integration)', () => {
     expect(res.body).toMatchObject({ status: 'ok' });
     expect(Number.isFinite(res.body.uptimeSeconds)).toBe(true);
     expect(res.body.timestamp).toEqual(expect.any(String));
+    // Real PrismaService, no override: reports whichever state this machine's
+    // database is actually in instead of crashing the request either way.
+    expect(['ok', 'error']).toContain(res.body.database);
   });
 
   it('reflects the request origin in CORS headers', async () => {

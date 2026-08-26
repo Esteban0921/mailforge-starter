@@ -40,7 +40,7 @@ pnpm dev
 
 - API (NestJS) → http://localhost:3001 — health: `curl localhost:3001/health`
 - Web (Next.js) → http://localhost:3000
-- Mailpit (cuando se use) → http://localhost:8025
+- Mailpit (cuando se use) → http://localhost:8026
 
 ## 4. Verificar la calidad del proyecto
 
@@ -61,8 +61,12 @@ pnpm --filter @mailforge/web exec playwright install chromium
 ## 5. Infraestructura con Docker (Fase 1+)
 
 ```bash
-docker compose up -d   # Postgres :5432 · Redis :6379 · Mailpit :8025
+docker compose up -d   # Postgres :5433 · Redis :6380 · Mailpit :8026
 ```
+
+Puertos desplazados (+1 en el último dígito) porque el equipo puede tener
+otro stack Docker corriendo en los puertos estándar; ver la nota al
+principio de `docker-compose.yml`.
 
 Y para la base de datos (cuando haya modelos):
 

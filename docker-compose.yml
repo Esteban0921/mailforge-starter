@@ -1,3 +1,8 @@
+# Puertos de host desplazados (+1 en el último dígito de cada uno) porque
+# esta máquina ya corre otro stack Docker ("crm") en los puertos por defecto
+# de Postgres/Redis/Mailpit. Los puertos *dentro* de cada contenedor son los
+# estándar; solo cambia el lado publicado. Ver DATABASE_URL/REDIS_URL/SMTP_*
+# en .env.example, que deben coincidir con estos.
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,7 +13,7 @@ services:
       POSTGRES_PASSWORD: mailforge
       POSTGRES_DB: mailforge
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +27,7 @@ services:
     container_name: mailforge-redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - '6380:6379'
     volumes:
       - redis_data:/data
     healthcheck:
@@ -36,8 +41,8 @@ services:
     container_name: mailforge-mailpit
     restart: unless-stopped
     ports:
-      - '8025:8025' # Interfaz web
-      - '1025:1025' # SMTP
+      - '8026:8025' # Interfaz web
+      - '1026:1025' # SMTP
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1

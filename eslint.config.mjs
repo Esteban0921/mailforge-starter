@@ -6,8 +6,6 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     // Global exclusions: applied no matter which workspace invokes eslint.
-    // packages/database is excluded: its only meaningful check is `prisma validate`,
-    // which requires a live DATABASE_URL (deferred to Phase 1).
     ignores: [
       '**/node_modules/**',
       '**/dist/**',
@@ -17,7 +15,7 @@ export default tseslint.config(
       '**/playwright-report/**',
       '**/test-results/**',
       '**/next-env.d.ts',
-      'packages/database/**',
+      'packages/database/prisma/**',
     ],
   },
   {

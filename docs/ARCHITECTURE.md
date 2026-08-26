@@ -25,7 +25,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 │  │ Audiences ⏳│  │ Campaigns ⏳  │  │ Automations ⏳      │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 └─────────────┬───────────────────────┬───────────────────────┘
-              │ Prisma ⏳             │ BullMQ ⏳
+              │ Prisma ✅             │ BullMQ ⏳
      ┌────────▼────────┐     ┌────────▼────────┐
      │   PostgreSQL    │     │  Redis + BullMQ │
      └─────────────────┘     └────────┬────────┘
@@ -40,14 +40,14 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 
 ## Estado por componente
 
-| Carpeta             | Contenido                                                               | Estado       |
-| ------------------- | ----------------------------------------------------------------------- | ------------ |
-| `apps/api`          | NestJS 11, Express, health, CORS por entorno, Helmet, rate limiting     | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui     | ✅ Operativo |
-| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas          | ✅ Operativo |
-| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                | ✅ Operativo |
-| `packages/database` | Prisma; modelos base + migración inicial (TASK-0016), pendiente aplicar | 🔧 Fase 1    |
-| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                           | ✅ Operativo |
+| Carpeta             | Contenido                                                                                             | Estado       |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | ------------ |
+| `apps/api`          | NestJS 11, Express, health (con chequeo de BD), CORS por entorno, Helmet, rate limiting, PrismaModule | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui                                   | ✅ Operativo |
+| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                        | ✅ Operativo |
+| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                              | ✅ Operativo |
+| `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                    | ✅ Operativo |
+| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                                                         | ✅ Operativo |
 
 ---
 
@@ -116,7 +116,8 @@ apps/api/src/
   main.ts                  # bootstrap Nest
   env.ts                   # lectura de configuración
   app.module.ts            # módulo raíz
-  modules/health/          # controller + service + specs
+  prisma/                  # PrismaModule + PrismaService (@Global, conexión perezosa)
+  modules/health/          # controller + service (chequea BD) + specs
   *.integration.spec.ts    # supertest contra el servidor real
 apps/web/
   src/app/                 # App Router: layout, page, globals.css
@@ -124,7 +125,7 @@ apps/web/
   playwright.config.ts     # next start en :4123 tras build
 packages/shared/src/       # result, normalize-email, slugify, pagination, routes
 packages/email/src/        # render-template (+ specs)
-packages/database/         # prisma (Fase 1)
+packages/database/         # prisma/ (schema, migraciones) + src/index.ts (re-exporta @prisma/client)
 ```
 
 Módulos backend planificados: auth, organizations, users, audiences, subscribers,
@@ -169,17 +170,17 @@ Detalles importantes:
 
 ## Variables de entorno
 
-| Variable                   | Usada por         | Desde     | Por defecto              |
-| -------------------------- | ----------------- | --------- | ------------------------ |
-| API_PORT                   | apps/api          | ahora     | 3001                     |
-| CORS_ORIGIN                | apps/api          | ahora     | refleja cualquier origin |
-| NEXT_PUBLIC_API_URL        | apps/web          | reservada | http://localhost:3001    |
-| NEXT_DIST_DIR              | apps/web          | opcional  | .next                    |
-| E2E_PORT                   | apps/web (E2E)    | opcional  | 4123                     |
-| DATABASE_URL               | packages/database | Fase 1    | -                        |
-| REDIS_URL                  | worker/queue      | Fase 3    | -                        |
-| JWT_SECRET, JWT_EXPIRES_IN | auth              | Fase 1    | -                        |
-| SMTP_*, SMTP_FROM          | envío email       | Fase 3    | -                        |
+| Variable                   | Usada por                   | Desde     | Por defecto                              |
+| -------------------------- | --------------------------- | --------- | ---------------------------------------- |
+| API_PORT                   | apps/api                    | ahora     | 3001                                     |
+| CORS_ORIGIN                | apps/api                    | ahora     | refleja cualquier origin                 |
+| NEXT_PUBLIC_API_URL        | apps/web                    | reservada | http://localhost:3001                    |
+| NEXT_DIST_DIR              | apps/web                    | opcional  | .next                                    |
+| E2E_PORT                   | apps/web (E2E)              | opcional  | 4123                                     |
+| DATABASE_URL               | apps/api, packages/database | ahora     | postgresql://...localhost:5433/mailforge |
+| REDIS_URL                  | worker/queue                | Fase 3    | -                                        |
+| JWT_SECRET, JWT_EXPIRES_IN | auth                        | Fase 1    | -                                        |
+| SMTP_*, SMTP_FROM          | envío email                 | Fase 3    | -                                        |
 
 Referencia canónica: .env.example en la raíz.
 
