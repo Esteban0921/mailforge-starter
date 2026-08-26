@@ -122,4 +122,73 @@ describe('AuthService (unit)', () => {
       });
     });
   });
+
+  describe('updateProfile', () => {
+    it('renames the user and returns the updated SessionUser', async () => {
+      const session = await service.register({
+        name: 'Ana',
+        email: 'ana@example.com',
+        password: 'contraseña-segura',
+      });
+
+      const updated = await service.updateProfile(session.user.id, 'Ana Nueva');
+
+      expect(updated).toEqual({ id: session.user.id, email: 'ana@example.com', name: 'Ana Nueva' });
+    });
+
+    it('rejects a blank name as invalid input', async () => {
+      const session = await service.register({
+        name: 'Ana',
+        email: 'ana@example.com',
+        password: 'contraseña-segura',
+      });
+
+      await expect(service.updateProfile(session.user.id, '   ')).rejects.toMatchObject({
+        response: { error: 'invalid_input' },
+      });
+    });
+  });
+
+  describe('updatePassword', () => {
+    it('changes the password when the current one matches', async () => {
+      const session = await service.register({
+        name: 'Ana',
+        email: 'ana@example.com',
+        password: 'contraseña-vieja',
+      });
+
+      await service.updatePassword(session.user.id, 'contraseña-vieja', 'contraseña-nueva');
+
+      await expect(
+        service.login({ email: 'ana@example.com', password: 'contraseña-vieja' }),
+      ).rejects.toMatchObject({ response: { error: 'invalid_credentials' } });
+      await expect(
+        service.login({ email: 'ana@example.com', password: 'contraseña-nueva' }),
+      ).resolves.toMatchObject({ user: { email: 'ana@example.com' } });
+    });
+
+    it('rejects the wrong current password without leaking anything', async () => {
+      const session = await service.register({
+        name: 'Ana',
+        email: 'ana@example.com',
+        password: 'contraseña-vieja',
+      });
+
+      await expect(
+        service.updatePassword(session.user.id, 'adivinar', 'contraseña-nueva'),
+      ).rejects.toMatchObject({ response: { error: 'invalid_credentials' } });
+    });
+
+    it('rejects a new password that is too weak', async () => {
+      const session = await service.register({
+        name: 'Ana',
+        email: 'ana@example.com',
+        password: 'contraseña-vieja',
+      });
+
+      await expect(
+        service.updatePassword(session.user.id, 'contraseña-vieja', 'corta'),
+      ).rejects.toMatchObject({ response: { error: 'weak_password' } });
+    });
+  });
 });

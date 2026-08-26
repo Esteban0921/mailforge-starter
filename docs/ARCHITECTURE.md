@@ -43,7 +43,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 | Carpeta             | Contenido                                                                                                                                                        | Estado       |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | `apps/api`          | NestJS 11, Express, health (con chequeo de BD), auth (JWT access/refresh, bcrypt), Organizations (CRUD + roles + guard), CORS por entorno, Helmet, rate limiting | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui                                                                                              | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui, auth real vía HTTP (TASK-0020; E2E sigue en mock, ver abajo)                                | ✅ Operativo |
 | `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                                                                                   | ✅ Operativo |
 | `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                                                                                         | ✅ Operativo |
 | `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                                                                               | ✅ Operativo |
@@ -121,13 +121,16 @@ apps/api/src/
   env.ts                   # lectura de configuración
   app.module.ts            # módulo raíz
   prisma/                  # PrismaModule + PrismaService (@Global, conexión perezosa) + fake para tests
-  modules/auth/            # registro/login/refresh, JwtAuthGuard, DTOs class-validator, bcrypt, JWT
+  modules/auth/            # registro/login/refresh/me/me-password, JwtAuthGuard, DTOs, bcrypt, JWT
   modules/organizations/   # CRUD + roles + OrganizationGuard (:id -> membership)
   modules/health/          # controller + service (chequea BD) + specs
   *.integration.spec.ts    # supertest contra el servidor real
 apps/web/
   src/app/                 # App Router: layout, page, globals.css
-  e2e/                     # specs Playwright
+  src/lib/api-client.ts    # fetch wrapper de bajo nivel hacia apps/api, sin lógica de auth
+  src/lib/auth/            # store.ts (mock), http-store.ts (real), session-storage.ts (compartido),
+                           # client.ts (elige uno de los dos, ver "Estrategia de pruebas")
+  e2e/                     # specs Playwright + fixtures.ts (fuerza el store mock)
   playwright.config.ts     # next start en :4123 tras build
 packages/shared/src/       # result, normalize-email, slugify, pagination, routes
 packages/email/src/        # render-template (+ specs)
@@ -164,6 +167,17 @@ Detalles importantes:
   (`prisma/prisma.fake.ts`, incluye `$transaction`) vía `.overrideProvider()`.
   La verificación contra Postgres real se hace a mano
   (`docker compose up -d` + `curl`), no en el gate automático.
+- **E2E sigue sin Docker aunque el frontend ya hable con la API real**: desde
+  TASK-0020, `apps/web/src/lib/auth/client.ts` usa `createHttpAuthStore` por
+  defecto (HTTP real contra `NEXT_PUBLIC_API_URL`, default `localhost:3001`).
+  Un `NEXT_PUBLIC_*` fijado solo para el proceso de `next start` de Playwright
+  no serviría — se inlinea en el build (`pnpm build`), no se lee en caliente al
+  servir. En su lugar, `e2e/fixtures.ts` inyecta con `addInitScript` la clave
+  `mailforge.e2e-force-mock` en `localStorage` antes de que cargue cualquier
+  script de la página; `client.ts` la lee en caliente y cae al store mock
+  (`createAuthStore`) para ese test. Todo spec de E2E que registre/inicie
+  sesión debe importar `test`/`expect` desde `./fixtures`, no desde
+  `@playwright/test` directamente.
 
 ---
 
@@ -181,19 +195,22 @@ Detalles importantes:
 
 ## Variables de entorno
 
-| Variable                   | Usada por                   | Desde     | Por defecto                               |
-| -------------------------- | --------------------------- | --------- | ----------------------------------------- |
-| API_PORT                   | apps/api                    | ahora     | 3001                                      |
-| CORS_ORIGIN                | apps/api                    | ahora     | refleja cualquier origin                  |
-| NEXT_PUBLIC_API_URL        | apps/web                    | reservada | http://localhost:3001                     |
-| NEXT_DIST_DIR              | apps/web                    | opcional  | .next                                     |
-| E2E_PORT                   | apps/web (E2E)              | opcional  | 4123                                      |
-| DATABASE_URL               | apps/api, packages/database | ahora     | postgresql://...localhost:5433/mailforge  |
-| REDIS_URL                  | worker/queue                | Fase 3    | -                                         |
-| JWT_SECRET, JWT_EXPIRES_IN | apps/api (auth)             | ahora     | JWT_EXPIRES_IN=7d; JWT_SECRET sin default |
-| SMTP_*, SMTP_FROM          | envío email                 | Fase 3    | -                                         |
+| Variable                   | Usada por                   | Desde    | Por defecto                                                            |
+| -------------------------- | --------------------------- | -------- | ---------------------------------------------------------------------- |
+| API_PORT                   | apps/api                    | ahora    | 3001                                                                   |
+| CORS_ORIGIN                | apps/api                    | ahora    | refleja cualquier origin                                               |
+| NEXT_PUBLIC_API_URL        | apps/web                    | ahora    | http://localhost:3001 (hardcodeado en api-client.ts, no requiere .env) |
+| NEXT_DIST_DIR              | apps/web                    | opcional | .next                                                                  |
+| E2E_PORT                   | apps/web (E2E)              | opcional | 4123                                                                   |
+| DATABASE_URL               | apps/api, packages/database | ahora    | postgresql://...localhost:5433/mailforge                               |
+| REDIS_URL                  | worker/queue                | Fase 3   | -                                                                      |
+| JWT_SECRET, JWT_EXPIRES_IN | apps/api (auth)             | ahora    | JWT_EXPIRES_IN=7d; JWT_SECRET sin default                              |
+| SMTP_*, SMTP_FROM          | envío email                 | Fase 3   | -                                                                      |
 
-Referencia canónica: .env.example en la raíz.
+Referencia canónica: .env.example en la raíz — pero Next.js **no lee el .env de
+la raíz**, solo `apps/web/.env*`. Para apuntar el frontend a otra URL de API,
+crea `apps/web/.env.local` (gitignored) con `NEXT_PUBLIC_API_URL=...`; sin él,
+usa el default de `api-client.ts`.
 
 ---
 

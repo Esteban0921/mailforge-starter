@@ -124,4 +124,44 @@ describe('Auth flow (integration)', () => {
 
     expect(res.body.error).toBe('invalid_credentials');
   });
+
+  it('rejects /auth/me with no token, and updates the name with one', async () => {
+    await request(app.getHttpServer()).patch('/auth/me').send({ name: 'Nadie' }).expect(401);
+
+    const registerRes = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Mia', email: 'mia@example.com', password: 'contraseña-perfil' })
+      .expect(201);
+
+    const res = await request(app.getHttpServer())
+      .patch('/auth/me')
+      .set('Authorization', `Bearer ${registerRes.body.accessToken}`)
+      .send({ name: 'Mia Actualizada' })
+      .expect(200);
+
+    expect(res.body).toMatchObject({ email: 'mia@example.com', name: 'Mia Actualizada' });
+  });
+
+  it('changes the password via /auth/me/password, and the old one stops working', async () => {
+    const registerRes = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ name: 'Nico', email: 'nico@example.com', password: 'contraseña-vieja' })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .patch('/auth/me/password')
+      .set('Authorization', `Bearer ${registerRes.body.accessToken}`)
+      .send({ currentPassword: 'contraseña-vieja', newPassword: 'contraseña-nueva' })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'nico@example.com', password: 'contraseña-vieja' })
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'nico@example.com', password: 'contraseña-nueva' })
+      .expect(200);
+  });
 });

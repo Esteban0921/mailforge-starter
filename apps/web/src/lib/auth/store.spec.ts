@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { SESSION_KEY, USERS_KEY, createAuthStore, type StorageLike } from './store';
+import { USERS_KEY, createAuthStore, type StorageLike } from './store';
+import { SESSION_KEY } from './session-storage';
 
 /** In-memory StorageLike so specs run in plain node, no browser needed. */
 function memoryStorage(): StorageLike {

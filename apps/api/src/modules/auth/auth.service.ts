@@ -12,6 +12,7 @@ import {
   type AuthSession,
   type LoginInput,
   type RegisterInput,
+  type SessionUser,
 } from '@mailforge/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { readJwtExpiresIn } from '../../env';
@@ -111,6 +112,41 @@ export class AuthService {
     return this.buildSession(user);
   }
 
+  async updateProfile(userId: string, name: string): Promise<SessionUser> {
+    const trimmed = name.trim();
+    if (trimmed.length === 0) {
+      throw invalidInput();
+    }
+    const user = await this.prisma.user.update({ where: { id: userId }, data: { name: trimmed } });
+    return toSessionUser(user);
+  }
+
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<SessionUser> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    // Only reachable with a valid access token (JwtAuthGuard), so a missing
+    // user here would mean the account was deleted out from under the session.
+    if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      throw invalidCredentials('La contraseña actual no es correcta.');
+    }
+    if (!validatePassword(newPassword)) {
+      throw new BadRequestException({
+        error: 'weak_password',
+        message: 'La contraseña nueva es demasiado corta.',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    return toSessionUser(updated);
+  }
+
   private verifyToken(token: string, expectedType: JwtPayload['type']): JwtPayload {
     let payload: JwtPayload;
     try {
@@ -127,7 +163,7 @@ export class AuthService {
 
   private buildSession(user: UserRecord): AuthSession {
     return {
-      user: { id: user.id, email: user.email, name: user.name },
+      user: toSessionUser(user),
       accessToken: this.jwt.sign({ sub: user.id, type: 'access' } satisfies JwtPayload, {
         expiresIn: ACCESS_TOKEN_TTL,
       }),
@@ -172,4 +208,8 @@ function isUniqueConstraintViolationOn(error: unknown, field: string): boolean {
 
 function defaultOrganizationName(userName: string): string {
   return `Organización de ${userName}`;
+}
+
+function toSessionUser(user: UserRecord): SessionUser {
+  return { id: user.id, email: user.email, name: user.name };
 }

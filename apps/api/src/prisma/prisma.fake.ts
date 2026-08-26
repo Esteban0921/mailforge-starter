@@ -64,6 +64,18 @@ export function createFakePrismaService(): PrismaService {
         users.push(user);
         return user;
       },
+      async update({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: { name?: string; passwordHash?: string };
+      }): Promise<FakeUser> {
+        const user = users.find((u) => u.id === where.id);
+        if (!user) throw new Error(`No User found for id ${where.id}`);
+        Object.assign(user, data);
+        return user;
+      },
     },
     organization: {
       async findUnique({ where }: { where: { id?: string; slug?: string } }) {

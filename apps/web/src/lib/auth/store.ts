@@ -8,25 +8,22 @@ import {
   type SessionUser,
 } from '@mailforge/shared';
 import { err, ok, type Result } from '@mailforge/shared';
+import { createSessionPersistence, type StorageLike } from './session-storage';
 
 /**
  * MOCK auth store (Fase 1 interim).
  *
- * Implements the shared auth contract over plain storage until the real
- * NestJS auth module exists (TASK-0018). When that happens this module
- * becomes an HTTP client and nothing else changes.
+ * Implements the shared auth contract over plain storage — kept around as
+ * the store the E2E suite runs against, so CI never needs Docker/Postgres
+ * (see http-store.ts's docstring for how a real browser picks between the
+ * two). When testing this file directly, use it exactly as before.
  *
  * The stored "secret" is deliberate obfuscation, NOT cryptography: this
  * mock must never hold anything beyond throwaway local dev data.
  */
 export const USERS_KEY = 'mailforge.users';
-export const SESSION_KEY = 'mailforge.session';
 
-export interface StorageLike {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
+export type { StorageLike };
 
 interface StoredUser extends SessionUser {
   /** Mock-only obfuscated secret; see module docstring. */
@@ -73,39 +70,8 @@ export interface AuthStore {
   ): Promise<Result<AuthSession, AuthError>>;
 }
 
-/**
- * Fired on `window` whenever the session is written or cleared. The native
- * `storage` event only reaches OTHER tabs, never the one that made the
- * change — components in this tab (e.g. the sidebar's user name) need this
- * to notice a profile update made by a sibling component.
- */
-export const SESSION_CHANGE_EVENT = 'mailforge:session-change';
-
-function notifySessionChange(): void {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event(SESSION_CHANGE_EVENT));
-  }
-}
-
 export function createAuthStore(storage: StorageLike): AuthStore {
-  function persistSession(session: AuthSession | null): void {
-    if (session === null) {
-      storage.removeItem(SESSION_KEY);
-    } else {
-      storage.setItem(SESSION_KEY, JSON.stringify(session));
-    }
-    notifySessionChange();
-  }
-
-  function readSession(): AuthSession | null {
-    const raw = storage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as AuthSession;
-    } catch {
-      return null;
-    }
-  }
+  const { persistSession, readSession } = createSessionPersistence(storage);
 
   return {
     async register(input) {
