@@ -128,8 +128,11 @@ apps/api/src/
 apps/web/
   src/app/                 # App Router: layout, page, globals.css
   src/lib/api-client.ts    # fetch wrapper de bajo nivel hacia apps/api, sin lógica de auth
+  src/lib/authenticated-fetch.ts # adjunta el access token + reintenta una vez tras refrescar en un 401
   src/lib/auth/            # store.ts (mock), http-store.ts (real), session-storage.ts (compartido),
                            # client.ts (elige uno de los dos, ver "Estrategia de pruebas")
+  src/lib/organizations/   # listOrganizations() + organización "actual" (solo localStorage, TASK-0021)
+  src/components/organization-switcher.tsx # dropdown en el sidebar; null si la API no responde
   e2e/                     # specs Playwright + fixtures.ts (fuerza el store mock)
   playwright.config.ts     # next start en :4123 tras build
 packages/shared/src/       # result, normalize-email, slugify, pagination, routes
@@ -178,6 +181,15 @@ Detalles importantes:
   (`createAuthStore`) para ese test. Todo spec de E2E que registre/inicie
   sesión debe importar `test`/`expect` desde `./fixtures`, no desde
   `@playwright/test` directamente.
+- **Organizations no tiene mock, a propósito**: a diferencia de auth y
+  audiences, `lib/organizations` llama siempre a la API real — no existe un
+  `createMockOrganizationsStore`. Por eso no hay specs E2E de
+  `<OrganizationSwitcher>`: en el build que sirve Playwright la API no
+  responde, así que el componente cae a su estado `loadFailed` (no renderiza
+  nada) — cubierto por un test de componente
+  (`organization-switcher.spec.tsx`, fetch mockeado con Testing Library), no
+  por E2E. Verificado a mano contra Postgres real: listar organizaciones,
+  cambiar entre ellas, y que la elección sobrevive un reload.
 
 ---
 

@@ -32,7 +32,7 @@ sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 
 ---
 
-## Fase 1 – Multi-tenant + Autenticación (1.5 – 2 semanas)
+## Fase 1 – Multi-tenant + Autenticación ✅ COMPLETADA (2026-08-26)
 
 **Objetivo:** registrarse, crear organizaciones y cambiar entre ellas.
 
@@ -41,7 +41,10 @@ sin Docker, y todos los gates (`lint/build/test/e2e`) pasan también sin Docker.
 | Backend  | Modelos User/Organization/OrganizationMember; Prisma en la API; auth JWT; CRUD orgs + roles + guard organizationId | TASK-0016 … TASK-0019 |
 | Frontend | Login/registro; layout autenticado; organization switcher; protección de rutas                                     | TASK-0020, TASK-0021  |
 
-**Paralelismo:** Joseph puede empezar pantallas con mocks mientras Esteban levanta Prisma/auth.
+Criterio cumplido: registro provisiona una Organization real (el usuario
+queda `owner`), login/refresh/perfil hablan con la API real vía JWT+bcrypt, y
+el sidebar deja cambiar entre las organizaciones del usuario — todo verificado
+contra Postgres real, no solo contra el fake de los tests.
 
 ---
 

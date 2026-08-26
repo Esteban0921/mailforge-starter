@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { LayoutDashboard, LogOut, Megaphone, Menu, Users, X, Zap } from 'lucide-react';
 import { APP_ROUTES } from '@mailforge/shared';
 import { getAuthStore, SESSION_CHANGE_EVENT } from '@/lib/auth';
+import { OrganizationSwitcher } from '@/components/organization-switcher';
 import { Wordmark } from '@/components/wordmark';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
@@ -109,7 +110,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <X className="size-4.5" aria-hidden="true" />
           </button>
         </div>
-        <nav className="mt-8 flex flex-col gap-1" data-testid="dashboard-nav">
+        <div className="mt-6">
+          <OrganizationSwitcher />
+        </div>
+        <nav className="mt-4 flex flex-col gap-1" data-testid="dashboard-nav">
           {NAV_ITEMS.map((item) =>
             item.enabled ? (
               <a
