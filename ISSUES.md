@@ -41,7 +41,7 @@ tiene un identificador estable `TASK-XXXX`; los estados viven aquí y solo aquí
 | TASK-0021 | Organization switcher + protección de rutas Next                         | Joseph      | Pendiente | —          | Guard de cliente ya en f2d94dc; falta el switcher                                                                 |
 | TASK-0022 | Modelos Audience/Subscriber + endpoints CRUD + validación                | Esteban     | En curso  | —          | Schema (Audience/Subscriber/AudienceSubscriber/Segment) + migración generados; endpoints bloqueados por TASK-0015 |
 | TASK-0023 | Importación de suscriptores por CSV                                      | Esteban     | En curso  | —          | parseSubscriberCsv (parseo + validación, sin I/O) en packages/shared; endpoint bloqueado por TASK-0015/TASK-0022  |
-| TASK-0024 | UI audiencias/suscriptores: listado, alta, filtros, estados              | Joseph      | Pendiente | —          | Fase 2                                                                                                            |
+| TASK-0024 | UI audiencias/suscriptores: listado, alta, filtros, estados              | Agente      | Hecha     | 2026-08-26 | Mock localStorage (mismo patrón que auth); alta manual + CSV + filtro de estado; 5 E2E nuevos                     |
 | TASK-0025 | Adoptar shadcn/ui + tokens de diseño base                                | Agente      | Hecha     | 2026-08-25 | Adelantada a petición de Esteban; ver TASK-0045 para el alcance real                                              |
 
 ## Auditoría transversal 2026-08-25 (backend + frontend + proceso)
