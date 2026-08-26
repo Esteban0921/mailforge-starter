@@ -15,16 +15,13 @@ import {
 } from '@mailforge/shared';
 import { PrismaService } from '../../prisma/prisma.service';
 import { readJwtExpiresIn } from '../../env';
+import { generateOrganizationSlug } from '../organizations/organization-slug';
+import type { JwtPayload } from './jwt-payload';
 
 /** Short-lived on purpose: a leaked access token stops mattering fast. The
  * refresh token (readJwtExpiresIn, default 7d) is what carries the session. */
 const ACCESS_TOKEN_TTL = '15m';
 const BCRYPT_ROUNDS = 10;
-
-interface JwtPayload {
-  sub: string;
-  type: 'access' | 'refresh';
-}
 
 interface UserRecord {
   id: string;
@@ -59,10 +56,27 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-    const user = await this.prisma.user
-      .create({ data: { email: email.value, name, passwordHash } })
+    // A brand-new user needs somewhere to put data (RULE-005: nothing lives
+    // outside an organization) — register() provisions a personal one and
+    // makes the new user its owner, atomically with the User row itself.
+    const user = await this.prisma
+      .$transaction(async (tx) => {
+        const createdUser = await tx.user.create({
+          data: { email: email.value, name, passwordHash },
+        });
+        const organization = await tx.organization.create({
+          data: { name: defaultOrganizationName(name), slug: generateOrganizationSlug(name) },
+        });
+        await tx.organizationMember.create({
+          data: { organizationId: organization.id, userId: createdUser.id, role: 'owner' },
+        });
+        return createdUser;
+      })
       .catch((error: unknown) => {
-        if (isUniqueConstraintViolation(error)) {
+        // Only the email collision is a real user-facing outcome; a slug
+        // collision (astronomically unlikely: 36^6 random suffix) is a bug
+        // to surface as a 500, not something to mislabel as "email taken".
+        if (isUniqueConstraintViolationOn(error, 'email')) {
           throw emailAlreadyRegistered();
         }
         throw error;
@@ -144,8 +158,18 @@ function invalidCredentials(message: string): UnauthorizedException {
   return new UnauthorizedException({ error: 'invalid_credentials', message });
 }
 
-/** Prisma's unique-constraint violation code; defends the register() TOCTOU gap
- * between the findUnique pre-check and create() under concurrent requests. */
-function isUniqueConstraintViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002';
+/** Prisma's unique-constraint violation code on a specific field; defends the
+ * register() TOCTOU gap between the findUnique pre-check and create() under
+ * concurrent requests. */
+function isUniqueConstraintViolationOn(error: unknown, field: string): boolean {
+  if (typeof error !== 'object' || error === null || !('code' in error) || error.code !== 'P2002') {
+    return false;
+  }
+  const meta = 'meta' in error ? error.meta : undefined;
+  const target = meta && typeof meta === 'object' && 'target' in meta ? meta.target : undefined;
+  return Array.isArray(target) && target.includes(field);
+}
+
+function defaultOrganizationName(userName: string): string {
+  return `Organización de ${userName}`;
 }

@@ -19,7 +19,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 ┌─────────────────────────────▼───────────────────────────────┐
 │                     NestJS (apps/api) ✅                    │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
-│  │ Health ✅   │  │ Auth ✅      │  │ Organizations ⏳    │  │
+│  │ Health ✅   │  │ Auth ✅      │  │ Organizations ✅    │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
 │  │ Audiences ⏳│  │ Campaigns ⏳  │  │ Automations ⏳      │  │
@@ -40,14 +40,14 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 
 ## Estado por componente
 
-| Carpeta             | Contenido                                                                                                                  | Estado       |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `apps/api`          | NestJS 11, Express, health (con chequeo de BD), auth (JWT access/refresh, bcrypt), CORS por entorno, Helmet, rate limiting | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui                                                        | ✅ Operativo |
-| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                                             | ✅ Operativo |
-| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                                                   | ✅ Operativo |
-| `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                                         | ✅ Operativo |
-| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                                                                              | ✅ Operativo |
+| Carpeta             | Contenido                                                                                                                                                        | Estado       |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `apps/api`          | NestJS 11, Express, health (con chequeo de BD), auth (JWT access/refresh, bcrypt), Organizations (CRUD + roles + guard), CORS por entorno, Helmet, rate limiting | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui                                                                                              | ✅ Operativo |
+| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                                                                                   | ✅ Operativo |
+| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                                                                                         | ✅ Operativo |
+| `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                                                                               | ✅ Operativo |
+| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                                                                                                                    | ✅ Operativo |
 
 ---
 
@@ -57,7 +57,11 @@ Usamos **Shared Database + tenant_id** (la más simple y escalable para empezar)
 
 - Casi todas las tablas tendrán `organizationId`
 - Todos los queries del backend filtrarán **obligatoriamente** por `organizationId`
-- En NestJS: un `OrganizationGuard` + decorador `@CurrentOrganization()` (Fase 1)
+- En NestJS: `OrganizationGuard` (confirma membership vía el `:id` de la ruta) +
+  decorador `@CurrentOrganizationRole()`, detrás de `JwtAuthGuard` + `@CurrentUserId()`
+- `POST /auth/register` provisiona una Organization personal (el usuario queda
+  `owner`) en la misma transacción que crea el `User` — nadie existe sin
+  organización, ni un instante (TASK-0019)
 - Invariante nº 1 del proyecto: RULE-005 de [AGENTS.md](../AGENTS.md)
 
 Ventajas: fácil de implementar, buen rendimiento, backups simples.
@@ -117,7 +121,8 @@ apps/api/src/
   env.ts                   # lectura de configuración
   app.module.ts            # módulo raíz
   prisma/                  # PrismaModule + PrismaService (@Global, conexión perezosa) + fake para tests
-  modules/auth/            # registro/login/refresh, DTOs class-validator, bcrypt, JWT
+  modules/auth/            # registro/login/refresh, JwtAuthGuard, DTOs class-validator, bcrypt, JWT
+  modules/organizations/   # CRUD + roles + OrganizationGuard (:id -> membership)
   modules/health/          # controller + service (chequea BD) + specs
   *.integration.spec.ts    # supertest contra el servidor real
 apps/web/
@@ -129,8 +134,8 @@ packages/email/src/        # render-template (+ specs)
 packages/database/         # prisma/ (schema, migraciones) + src/index.ts (re-exporta @prisma/client)
 ```
 
-Módulos backend planificados: organizations, users, audiences, subscribers,
-templates, campaigns, automations, tracking, queue, common. (auth ya construido.)
+Módulos backend planificados: users, audiences, subscribers, templates,
+campaigns, automations, tracking, queue, common. (auth y organizations ya construidos.)
 
 ---
 
@@ -138,11 +143,11 @@ templates, campaigns, automations, tracking, queue, common. (auth ya construido.
 
 Tres capas, todas ejecutables sin Docker:
 
-| Capa        | Herramientas                                        | Qué cubre                                                   |
-| ----------- | --------------------------------------------------- | ----------------------------------------------------------- |
-| Unitaria    | Vitest por paquete (shared, email, api)             | Lógica pura: validaciones, render, servicios con mocks      |
-| Integración | Vitest + @nestjs/testing + unplugin-swc + supertest | DI real de Nest y capa HTTP completa contra /health y /auth |
-| E2E         | Playwright (chromium)                               | La landing servida por next start tras build de producción  |
+| Capa        | Herramientas                                        | Qué cubre                                                                   |
+| ----------- | --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Unitaria    | Vitest por paquete (shared, email, api)             | Lógica pura: validaciones, render, servicios con mocks                      |
+| Integración | Vitest + @nestjs/testing + unplugin-swc + supertest | DI real de Nest y capa HTTP completa contra /health, /auth y /organizations |
+| E2E         | Playwright (chromium)                               | La landing servida por next start tras build de producción                  |
 
 Detalles importantes:
 
@@ -154,9 +159,10 @@ Detalles importantes:
   valida además el build real.
 - **Sin base de datos, incluso con Prisma ya conectado**: `pnpm test` y CI corren
   sin Docker por diseño. `PrismaService` conecta perezosamente (nunca en boot),
-  `HealthService` envuelve su `SELECT 1` en try/catch, y los tests de auth
-  sustituyen `PrismaService` por un fake en memoria (`prisma/prisma.fake.ts`)
-  vía `.overrideProvider()`. La verificación contra Postgres real se hace a mano
+  `HealthService` envuelve su `SELECT 1` en try/catch, y los tests de auth y
+  organizations sustituyen `PrismaService` por un fake en memoria
+  (`prisma/prisma.fake.ts`, incluye `$transaction`) vía `.overrideProvider()`.
+  La verificación contra Postgres real se hace a mano
   (`docker compose up -d` + `curl`), no en el gate automático.
 
 ---
