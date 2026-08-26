@@ -22,7 +22,7 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 │  │ Health ✅   │  │ Auth ✅      │  │ Organizations ✅    │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
-│  │ Audiences ⏳│  │ Campaigns ⏳  │  │ Automations ⏳      │  │
+│  │ Audiences ✅│  │ Campaigns ⏳  │  │ Automations ⏳      │  │
 │  └─────────────┘  └──────────────┘  └────────────────────┘  │
 └─────────────┬───────────────────────┬───────────────────────┘
               │ Prisma ✅             │ BullMQ ⏳
@@ -40,14 +40,14 @@ Este documento describe la arquitectura objetivo marcando qué está ya implemen
 
 ## Estado por componente
 
-| Carpeta             | Contenido                                                                                                                                                        | Estado       |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `apps/api`          | NestJS 11, Express, health (con chequeo de BD), auth (JWT access/refresh, bcrypt), Organizations (CRUD + roles + guard), CORS por entorno, Helmet, rate limiting | ✅ Operativo |
-| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui, auth real vía HTTP (TASK-0020; E2E sigue en mock, ver abajo)                                | ✅ Operativo |
-| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                                                                                   | ✅ Operativo |
-| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                                                                                         | ✅ Operativo |
-| `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                                                                               | ✅ Operativo |
-| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                                                                                                                    | ✅ Operativo |
+| Carpeta             | Contenido                                                                                                                                               | Estado       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `apps/api`          | NestJS 11, Express, health (con chequeo de BD), auth, Organizations, Audiences/Subscribers (CRUD + import CSV), CORS por entorno, Helmet, rate limiting | ✅ Operativo |
+| `apps/web`          | Next.js 15 App Router, Tailwind v4 CSS-first, componentes shadcn/ui, auth real vía HTTP (TASK-0020; E2E sigue en mock, ver abajo)                       | ✅ Operativo |
+| `packages/shared`   | normalizeEmail, slugify, Result, paginación, rutas compartidas                                                                                          | ✅ Operativo |
+| `packages/email`    | renderTemplate {{var}} + escape HTML + variante estricta                                                                                                | ✅ Operativo |
+| `packages/database` | Prisma; modelos base + migraciones aplicadas contra Postgres real (TASK-0015/0016)                                                                      | ✅ Operativo |
+| CI (`ci.yml`)       | format → lint → build → test → e2e en cada PR                                                                                                           | ✅ Operativo |
 
 ---
 
@@ -123,6 +123,7 @@ apps/api/src/
   prisma/                  # PrismaModule + PrismaService (@Global, conexión perezosa) + fake para tests
   modules/auth/            # registro/login/refresh/me/me-password, JwtAuthGuard, DTOs, bcrypt, JWT
   modules/organizations/   # CRUD + roles + OrganizationGuard (:id -> membership)
+  modules/audiences/       # anidado en organizations/:id/audiences; CRUD + import CSV (TASK-0022/0023)
   modules/health/          # controller + service (chequea BD) + specs
   *.integration.spec.ts    # supertest contra el servidor real
 apps/web/
@@ -165,8 +166,8 @@ Detalles importantes:
   valida además el build real.
 - **Sin base de datos, incluso con Prisma ya conectado**: `pnpm test` y CI corren
   sin Docker por diseño. `PrismaService` conecta perezosamente (nunca en boot),
-  `HealthService` envuelve su `SELECT 1` en try/catch, y los tests de auth y
-  organizations sustituyen `PrismaService` por un fake en memoria
+  `HealthService` envuelve su `SELECT 1` en try/catch, y los tests de auth,
+  organizations y audiences sustituyen `PrismaService` por un fake en memoria
   (`prisma/prisma.fake.ts`, incluye `$transaction`) vía `.overrideProvider()`.
   La verificación contra Postgres real se hace a mano
   (`docker compose up -d` + `curl`), no en el gate automático.
@@ -190,6 +191,16 @@ Detalles importantes:
   (`organization-switcher.spec.tsx`, fetch mockeado con Testing Library), no
   por E2E. Verificado a mano contra Postgres real: listar organizaciones,
   cambiar entre ellas, y que la elección sobrevive un reload.
+- **Audiences: backend real, frontend todavía en su mock**: TASK-0022/0023
+  construyeron `POST/GET /organizations/:id/audiences/...` de verdad (CRUD +
+  import CSV), pero `apps/web/src/lib/audiences/store.ts` (TASK-0024) sigue
+  sin conectar — a diferencia de auth, nadie ha pedido ese swap todavía. El
+  modelo real usa la relación muchos-a-muchos de verdad
+  (`AudienceSubscriber`): un mismo `Subscriber` (único por
+  `organizationId`+`email`) puede pertenecer a varias audiencias sin
+  duplicarse, a diferencia del mock (que trata cada audiencia como dueña de
+  sus propios suscriptores). El día que se conecte, esa es la diferencia de
+  comportamiento a tener en cuenta.
 
 ---
 

@@ -23,6 +23,35 @@ interface FakeMembership {
   updatedAt: Date;
 }
 
+interface FakeAudience {
+  id: string;
+  organizationId: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+interface FakeSubscriber {
+  id: string;
+  organizationId: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  status: string;
+  consentSource: string | null;
+  consentAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeAudienceLink {
+  audienceId: string;
+  subscriberId: string;
+  subscribedAt: Date;
+}
+
 /**
  * In-memory stand-in for the slice of PrismaService that AuthService and
  * OrganizationsService call, including `$transaction` (just runs the
@@ -34,8 +63,13 @@ export function createFakePrismaService(): PrismaService {
   const users: FakeUser[] = [];
   const organizations: FakeOrganization[] = [];
   const memberships: FakeMembership[] = [];
+  const audiences: FakeAudience[] = [];
+  const subscribers: FakeSubscriber[] = [];
+  const audienceLinks: FakeAudienceLink[] = [];
   let nextUserId = 1;
   let nextOrgId = 1;
+  let nextAudienceId = 1;
+  let nextSubscriberId = 1;
 
   function throwUniqueViolation(field: string): never {
     const error = new Error(`Unique constraint failed on the fields: (\`${field}\`)`) as Error & {
@@ -151,6 +185,135 @@ export function createFakePrismaService(): PrismaService {
         const membership: FakeMembership = { ...data, createdAt: now, updatedAt: now };
         memberships.push(membership);
         return membership;
+      },
+    },
+    audience: {
+      async findMany({
+        where,
+        include,
+      }: {
+        where: { organizationId: string; deletedAt: null };
+        include?: { _count?: { select: { subscribers: true } } };
+      }) {
+        const matches = audiences.filter(
+          (a) => a.organizationId === where.organizationId && a.deletedAt === null,
+        );
+        return matches.map((a) => ({
+          ...a,
+          ...(include?._count
+            ? { _count: { subscribers: audienceLinks.filter((l) => l.audienceId === a.id).length } }
+            : {}),
+        }));
+      },
+      async create({
+        data,
+      }: {
+        data: { organizationId: string; name: string; description: string | null };
+      }): Promise<FakeAudience> {
+        const now = new Date();
+        const audience: FakeAudience = {
+          id: `aud_${nextAudienceId++}`,
+          deletedAt: null,
+          ...data,
+          createdAt: now,
+          updatedAt: now,
+        };
+        audiences.push(audience);
+        return audience;
+      },
+      async findFirst({
+        where,
+      }: {
+        where: { id: string; organizationId: string; deletedAt: null };
+      }): Promise<FakeAudience | null> {
+        return (
+          audiences.find(
+            (a) =>
+              a.id === where.id &&
+              a.organizationId === where.organizationId &&
+              a.deletedAt === null,
+          ) ?? null
+        );
+      },
+    },
+    subscriber: {
+      async upsert({
+        where,
+        create,
+        update,
+      }: {
+        where: { organizationId_email: { organizationId: string; email: string } };
+        create: {
+          organizationId: string;
+          email: string;
+          firstName: string | null;
+          lastName: string | null;
+          status: string;
+          consentSource: string;
+          consentAt: Date;
+        };
+        update: Record<string, never>;
+      }): Promise<FakeSubscriber> {
+        const { organizationId, email } = where.organizationId_email;
+        const existing = subscribers.find(
+          (s) => s.organizationId === organizationId && s.email === email,
+        );
+        if (existing) {
+          Object.assign(existing, update, { updatedAt: new Date() });
+          return existing;
+        }
+        const now = new Date();
+        const subscriber: FakeSubscriber = {
+          id: `sub_${nextSubscriberId++}`,
+          ...create,
+          createdAt: now,
+          updatedAt: now,
+        };
+        subscribers.push(subscriber);
+        return subscriber;
+      },
+    },
+    audienceSubscriber: {
+      async create({
+        data,
+      }: {
+        data: { audienceId: string; subscriberId: string };
+      }): Promise<FakeAudienceLink> {
+        if (
+          audienceLinks.some(
+            (l) => l.audienceId === data.audienceId && l.subscriberId === data.subscriberId,
+          )
+        ) {
+          throwUniqueViolation('audienceId_subscriberId');
+        }
+        const link: FakeAudienceLink = { ...data, subscribedAt: new Date() };
+        audienceLinks.push(link);
+        return link;
+      },
+      async findMany({
+        where,
+        include,
+      }: {
+        where: { audienceId: string; subscriber?: { status: string } };
+        include?: { subscriber?: boolean };
+      }) {
+        const matches = audienceLinks.filter((l) => {
+          if (l.audienceId !== where.audienceId) return false;
+          if (where.subscriber?.status !== undefined) {
+            const subscriber = subscribers.find((s) => s.id === l.subscriberId);
+            if (subscriber?.status !== where.subscriber.status) return false;
+          }
+          return true;
+        });
+        return matches.map((l) => ({
+          ...l,
+          ...(include?.subscriber
+            ? { subscriber: subscribers.find((s) => s.id === l.subscriberId) }
+            : {}),
+        }));
+      },
+      async count({ where }: { where: { audienceId: string } }): Promise<number> {
+        return audienceLinks.filter((l) => l.audienceId === where.audienceId).length;
       },
     },
   };
