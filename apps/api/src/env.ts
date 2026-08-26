@@ -35,3 +35,11 @@ export function readCorsOrigins(env: NodeJS.ProcessEnv = process.env): true | st
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 }
+
+/** How long a refresh token stays valid. Mirrors JWT_EXPIRES_IN in .env.example. */
+export const DEFAULT_REFRESH_TOKEN_TTL = '7d';
+
+export function readJwtExpiresIn(env: NodeJS.ProcessEnv = process.env): string {
+  const raw = env.JWT_EXPIRES_IN?.trim();
+  return raw && raw.length > 0 ? raw : DEFAULT_REFRESH_TOKEN_TTL;
+}

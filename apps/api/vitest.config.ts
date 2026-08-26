@@ -12,6 +12,10 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.spec.ts'],
+    // AuthModule reads JWT_SECRET from process.env at import time (module
+    // decorator evaluation), so it must be set before that import runs —
+    // test.env is applied before test files load, unlike an in-file assignment.
+    env: { JWT_SECRET: 'vitest-only-secret-never-use-elsewhere' },
   },
   plugins: [
     swc.vite({
