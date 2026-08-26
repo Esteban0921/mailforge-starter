@@ -37,7 +37,9 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members OrganizationMember[]
+  members     OrganizationMember[]
+  audiences   Audience[]
+  subscribers Subscriber[]
 }
 
 model OrganizationMember {
@@ -53,4 +55,89 @@ model OrganizationMember {
 
   @@unique([organizationId, userId])
   @@index([userId])
+}
+
+// ============================================================
+// Fase 2 - Audiencias y suscriptores (docs/DATA_MODEL.md)
+// Diseño de opt-in (TASK-0055) y segmentación (TASK-0057) ya
+// decidido; CRUD/endpoints reales siguen bloqueados por TASK-0015
+// (sin Docker no hay Postgres contra el que probarlos de verdad).
+// ============================================================
+
+enum SubscriberStatus {
+  pending
+  subscribed
+  unsubscribed
+  bounced
+  complained
+}
+
+model Audience {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscribers  AudienceSubscriber[]
+  segments     Segment[]
+
+  @@index([organizationId])
+}
+
+model Subscriber {
+  id             String           @id @default(cuid())
+  organizationId String
+  email          String
+  firstName      String?
+  lastName       String?
+  status         SubscriberStatus @default(pending)
+  /// Solo mientras status = pending; se limpia al confirmar (TASK-0055).
+  confirmToken   String?
+  confirmedAt    DateTime?
+  consentAt      DateTime?
+  /// Origen del consentimiento, p. ej. "csv_import:lista-2026" o "signup_form".
+  consentSource  String?
+  customFields   Json?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  audiences    AudienceSubscriber[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId, status])
+  @@index([confirmToken])
+}
+
+model AudienceSubscriber {
+  audienceId   String
+  subscriberId String
+  subscribedAt DateTime @default(now())
+
+  audience   Audience   @relation(fields: [audienceId], references: [id], onDelete: Cascade)
+  subscriber Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@id([audienceId, subscriberId])
+  @@index([subscriberId])
+}
+
+model Segment {
+  id             String   @id @default(cuid())
+  organizationId String
+  audienceId     String
+  name           String
+  /// DSL de reglas (campo/operador/valor, AND) — nunca SQL libre. Ver DATA_MODEL.md.
+  rules          Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  audience Audience @relation(fields: [audienceId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([audienceId])
 }

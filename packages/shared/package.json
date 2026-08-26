@@ -19,7 +19,11 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.5.2",
     "typescript": "^5.6.0",
     "vitest": "^3.2.0"
+  },
+  "dependencies": {
+    "papaparse": "^5.7.0"
   }
 }
