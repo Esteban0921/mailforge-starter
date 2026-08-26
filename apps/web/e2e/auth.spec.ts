@@ -74,11 +74,16 @@ test.describe('auth flow (mock)', () => {
     await fillRegister(page);
     await expect(page).toHaveURL(/\/dashboard$/);
 
-    for (const label of ['Audiencias', 'Campañas', 'Automatizaciones']) {
+    for (const label of ['Campañas', 'Automatizaciones']) {
       const item = page.getByTestId(`nav-${label}`);
       await expect(item).toHaveAttribute('aria-disabled', 'true');
       await expect(item).not.toHaveAttribute('href', /.+/);
     }
+
+    // Audiencias graduated from placeholder to a real, enabled route.
+    const audiencesItem = page.getByTestId('nav-Audiencias');
+    await expect(audiencesItem).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(audiencesItem).toHaveAttribute('href', '/dashboard/audiences');
   });
 
   test('duplicate email is flagged on the email field, not as a generic error', async ({

@@ -17,6 +17,12 @@ export const APP_ROUTES = {
   register: '/register',
   dashboard: '/dashboard',
   profile: '/dashboard/profile',
+  audiences: '/dashboard/audiences',
 } as const;
+
+/** `/dashboard/audiences/:id` — not in APP_ROUTES since it needs an id. */
+export function audienceDetailRoute(audienceId: string): string {
+  return `${APP_ROUTES.audiences}/${audienceId}`;
+}
 
 export type AppRoute = (typeof APP_ROUTES)[keyof typeof APP_ROUTES];

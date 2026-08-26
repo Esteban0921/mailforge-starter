@@ -9,9 +9,20 @@ import { Wordmark } from '@/components/wordmark';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 
+/**
+ * "Panel" (/dashboard) must only look active on an exact match — every
+ * other section's routes are nested under /dashboard too. Everything else
+ * matches its own subpaths too, e.g. /dashboard/audiences/:id counts as
+ * "Audiencias" being current.
+ */
+function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === APP_ROUTES.dashboard) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 const NAV_ITEMS = [
   { href: APP_ROUTES.dashboard, label: 'Panel', icon: LayoutDashboard, enabled: true },
-  { href: APP_ROUTES.dashboard, label: 'Audiencias', icon: Users, enabled: false },
+  { href: APP_ROUTES.audiences, label: 'Audiencias', icon: Users, enabled: true },
   { href: APP_ROUTES.dashboard, label: 'Campañas', icon: Megaphone, enabled: false },
   { href: APP_ROUTES.dashboard, label: 'Automatizaciones', icon: Zap, enabled: false },
 ] as const;
@@ -105,11 +116,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={item.label}
                 href={item.href}
                 data-testid={`nav-${item.label}`}
-                aria-current={pathname === item.href ? 'page' : undefined}
+                aria-current={isNavItemActive(pathname, item.href) ? 'page' : undefined}
                 onClick={() => setMobileNavOpen(false)}
                 className={cn(
                   'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent',
-                  pathname === item.href
+                  isNavItemActive(pathname, item.href)
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground',
                 )}

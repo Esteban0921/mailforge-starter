@@ -18,7 +18,7 @@ export {
   type Paginated,
   type PageQuery,
 } from './pagination';
-export { API_ROUTES, APP_ROUTES, type AppRoute } from './routes';
+export { API_ROUTES, APP_ROUTES, audienceDetailRoute, type AppRoute } from './routes';
 export {
   parseSubscriberCsv,
   type ParsedSubscriberRow,
